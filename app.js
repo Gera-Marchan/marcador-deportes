@@ -2095,6 +2095,73 @@ class BaseballOBSApp {
       console.error('Error en renderTickerUI:', e);
     }
   }
+
+  /* ==========================================================================
+     MÓDULO DE FONDOS DE ESCENAS PERSONALIZADOS
+     ========================================================================== */
+  openSceneBackgroundsModal() {
+    const modal = document.getElementById('sceneBackgroundsModal');
+    if (modal) modal.classList.add('open');
+  }
+
+  closeSceneBackgroundsModal() {
+    const modal = document.getElementById('sceneBackgroundsModal');
+    if (modal) modal.classList.remove('open');
+  }
+
+  handleSceneBgUpload(sceneKey, event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxW = 1280;
+        const maxH = 720;
+
+        if (width > maxW || height > maxH) {
+          if (width / height > maxW / maxH) {
+            height = Math.round((height * maxW) / width);
+            width = maxW;
+          } else {
+            width = Math.round((width * maxH) / height);
+            height = maxH;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedWebP = canvas.toDataURL('image/webp', 0.82);
+
+        if (!this.state.customSceneBackgrounds) {
+          this.state.customSceneBackgrounds = {};
+        }
+
+        this.state.customSceneBackgrounds[sceneKey] = compressedWebP;
+        this.renderUI();
+        this.saveLocalStorage();
+        alert(`✅ ¡Fondo personalizado para "${sceneKey.toUpperCase()}" guardado exitosamente!`);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  resetSceneBackground(sceneKey) {
+    if (this.state.customSceneBackgrounds && this.state.customSceneBackgrounds[sceneKey]) {
+      delete this.state.customSceneBackgrounds[sceneKey];
+      this.renderUI();
+      this.saveLocalStorage();
+      alert(`✅ Fondo de "${sceneKey.toUpperCase()}" restablecido a la imagen por defecto.`);
+    }
+  }
 }
 
 // Inicializar la aplicación globalmente (window.app)

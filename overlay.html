@@ -1365,6 +1365,26 @@
         if (el) el.classList.toggle('active', screenMode === m);
       });
 
+      // APLICAR FONDOS DE ESCENA PERSONALIZADOS POR USUARIO
+      const customBgs = data.customSceneBackgrounds || {};
+      const bgMap = {
+        'screenEspera': { bg: customBgs.espera, default: 'img/ESPERA.png' },
+        'screenBienvenida': { bg: customBgs.bienvenida, default: 'img/BIENVENIDOS.PNG' },
+        'screenMedioTiempo': { bg: customBgs.medio_tiempo, default: 'img/MEDIOTIEMPO.png' },
+        'screenProblemas': { bg: customBgs.problemas, default: 'img/PROBELMAS.png' }
+      };
+
+      Object.keys(bgMap).forEach(screenId => {
+        const parent = document.getElementById(screenId);
+        if (parent) {
+          const bgDiv = parent.querySelector('.master-screen-bg');
+          if (bgDiv) {
+            const imgUrl = bgMap[screenId].bg || bgMap[screenId].default;
+            bgDiv.style.backgroundImage = `url('${imgUrl}')`;
+          }
+        }
+      });
+
       // Transición de Scorebug según modo
       const scorebugWrapper = document.getElementById('scorebug');
       if (scorebugWrapper) {

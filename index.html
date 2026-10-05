@@ -488,10 +488,14 @@
           </button>
         </div>
 
-        <!-- CONTROL DE MARCO DE CÁMARA OPCIONAL -->
-        <div style="margin-bottom: 12px;">
+        <!-- CONTROL DE MARCO DE CÁMARA OPCIONAL Y FONDOS DE ESCENAS -->
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
           <button id="btnToggleFrame" class="btn-action-sm" style="width: 100%; padding: 8px 10px; font-weight: 800; font-size: 0.72rem; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; cursor: pointer; transition: all 0.2s ease;" onclick="app.toggleCameraFrame()">
             🖼️ MARCO CÁMARA: DESACTIVADO (OFF)
+          </button>
+
+          <button class="btn-action-sm" style="width: 100%; padding: 8px 10px; font-weight: 800; font-size: 0.72rem; border-radius: 8px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5); color: #C084FC; cursor: pointer; transition: all 0.2s ease;" onclick="app.openSceneBackgroundsModal()">
+            🎨 PERSONALIZAR FONDOS DE ESCENAS
           </button>
         </div>
 
@@ -1182,6 +1186,61 @@
 
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
         <button class="btn-action-sm" onclick="app.closeSponsorsModal()">CERRAR</button>
+      </div>
+  <!-- MODAL DE GESTIÓN DE FONDOS DE ESCENAS -->
+  <div id="sceneBackgroundsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🎨 Personalizar Fondos de Pantalla para Escenas</h3>
+        <button class="btn-icon" onclick="app.closeSceneBackgroundsModal()">✕</button>
+      </div>
+
+      <p style="font-size:0.75rem; color:#94A3B8; margin-bottom:14px; line-height:1.4;">
+        Sube tus propias imágenes de fondo (PNG, JPG) para cada escena. Se optimizarán automáticamente a WebP ligero para tu OBS y se guardarán en tu cuenta.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        
+        <!-- ESPERA -->
+        <div style="background:rgba(30,41,59,0.8); padding:12px; border-radius:12px; border:1px solid rgba(56,189,248,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:800; color:#38BDF8;">⏳ 1. Pantalla de Espera / En Breve</span>
+            <button class="btn-action-sm danger" style="padding:2px 8px; font-size:0.65rem;" onclick="app.resetSceneBackground('espera')">Restablecer Imagen</button>
+          </div>
+          <input type="file" accept="image/*" class="form-input" style="font-size:0.75rem;" onchange="app.handleSceneBgUpload('espera', event)">
+        </div>
+
+        <!-- BIENVENIDA -->
+        <div style="background:rgba(30,41,59,0.8); padding:12px; border-radius:12px; border:1px solid rgba(56,189,248,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:800; color:#4ADE80;">👋 2. Pantalla de Bienvenida / Previa</span>
+            <button class="btn-action-sm danger" style="padding:2px 8px; font-size:0.65rem;" onclick="app.resetSceneBackground('bienvenida')">Restablecer Imagen</button>
+          </div>
+          <input type="file" accept="image/*" class="form-input" style="font-size:0.75rem;" onchange="app.handleSceneBgUpload('bienvenida', event)">
+        </div>
+
+        <!-- MEDIO TIEMPO -->
+        <div style="background:rgba(30,41,59,0.8); padding:12px; border-radius:12px; border:1px solid rgba(56,189,248,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:800; color:#FACC15;">⏸️ 3. Pantalla de Medio Tiempo</span>
+            <button class="btn-action-sm danger" style="padding:2px 8px; font-size:0.65rem;" onclick="app.resetSceneBackground('medio_tiempo')">Restablecer Imagen</button>
+          </div>
+          <input type="file" accept="image/*" class="form-input" style="font-size:0.75rem;" onchange="app.handleSceneBgUpload('medio_tiempo', event)">
+        </div>
+
+        <!-- FALLA TÉCNICA -->
+        <div style="background:rgba(30,41,59,0.8); padding:12px; border-radius:12px; border:1px solid rgba(56,189,248,0.3);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:800; color:#F87171;">⚠️ 4. Pantalla de Falla Técnica</span>
+            <button class="btn-action-sm danger" style="padding:2px 8px; font-size:0.65rem;" onclick="app.resetSceneBackground('problemas')">Restablecer Imagen</button>
+          </div>
+          <input type="file" accept="image/*" class="form-input" style="font-size:0.75rem;" onchange="app.handleSceneBgUpload('problemas', event)">
+        </div>
+
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button class="btn-action-sm" onclick="app.closeSceneBackgroundsModal()">CERRAR</button>
       </div>
     </div>
   </div>
