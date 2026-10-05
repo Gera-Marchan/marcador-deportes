@@ -2101,12 +2101,24 @@ class BaseballOBSApp {
      ========================================================================== */
   openSceneBackgroundsModal() {
     const modal = document.getElementById('sceneBackgroundsModal');
-    if (modal) modal.classList.add('open');
+    if (modal) {
+      modal.classList.add('open');
+      modal.classList.add('active');
+      modal.style.display = 'flex';
+      modal.style.opacity = '1';
+      modal.style.pointerEvents = 'auto';
+    }
   }
 
   closeSceneBackgroundsModal() {
     const modal = document.getElementById('sceneBackgroundsModal');
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+    }
   }
 
   handleSceneBgUpload(sceneKey, event) {
