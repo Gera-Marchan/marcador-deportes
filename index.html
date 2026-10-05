@@ -969,21 +969,31 @@
             </div>
           </div>
 
-          <!-- SUB-SECCIÓN CINTILLO DE NOTICIAS (TICKER TAPE) -->
-          <div style="background: rgba(15,23,42,0.7); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.3);">
+          <!-- SUB-SECCIÓN CINTILLO DE NOTICIAS (TICKER TAPE EN VIVO) -->
+          <div style="background: rgba(15,23,42,0.85); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.1);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 0.75rem; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase;">
-                📰 CINTILLO EN MOVIMIENTO (NOTICIAS / TICKER)
+              <span style="font-size: 0.78rem; font-weight: 900; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                📰 CINTILLO MARQUESINA EN VIVO (OBS)
               </span>
-              <span id="tickerStatusBadge" class="at-bat-badge" style="background: rgba(239,68,68,0.2); color: #F87171; font-size: 0.6rem;">OCULTO</span>
+              <span id="tickerStatusBadge" class="at-bat-badge" style="background: rgba(239,68,68,0.2); color: #F87171; font-size: 0.65rem; font-weight: 900;">🔴 OCULTO</span>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <input type="text" id="tickerTextInput" class="form-input" placeholder="Escribe el texto o noticias..." value="¡BIENVENIDOS A LA TRANSMISIÓÓN EN VIVO! | SUSCRÍBETE A NUESTRO CANAL | COMENTA TU EQUIPO FAVORITO" style="font-size: 0.75rem; padding: 6px 10px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; gap: 6px;">
+                <input type="text" id="tickerTextInput" class="form-input" placeholder="Escribe tu anuncio o noticia..." value="¡BIENVENIDOS A LA TRANSMISIÓN EN VIVO! | SUSCRÍBETE A NUESTRO CANAL Y SÍGUENOS EN REDES SOCIALES" style="font-size: 0.78rem; padding: 8px 12px; flex: 1;" onkeydown="if(event.key === 'Enter') app.updateTickerText()">
+              </div>
 
-              <div style="display: flex; gap: 4px;">
-                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 5px; background: rgba(34,197,94,0.15); color: #4ADE80; border-color: rgba(34,197,94,0.4);" id="btnToggleTicker" onclick="app.toggleTickerVisibility()">👁️ MOSTRAR CINTILLO</button>
-                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 5px; background: rgba(56,189,248,0.15); color: #38BDF8; border-color: rgba(56,189,248,0.4);" onclick="app.updateTickerText()">✏️ ACTUALIZAR TEXTO</button>
+              <!-- PRESETS RÁPIDOS PARA CINTILLO -->
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button class="btn-action-sm" style="font-size: 0.65rem; padding: 3px 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="app.setTickerPreset('bienvenida')">📢 Bienvenida</button>
+                <button class="btn-action-sm" style="font-size: 0.65rem; padding: 3px 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="app.setTickerPreset('redes')">📱 Redes</button>
+                <button class="btn-action-sm" style="font-size: 0.65rem; padding: 3px 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="app.setTickerPreset('patrocinadores')">🏆 Marcas</button>
+                <button class="btn-action-sm" style="font-size: 0.65rem; padding: 3px 6px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="app.setTickerPreset('aviso')">⚡ Aviso</button>
+              </div>
+
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.72rem; padding: 8px; font-weight: 800; background: rgba(34,197,94,0.2); color: #4ADE80; border-color: rgba(34,197,94,0.5);" id="btnToggleTicker" onclick="app.toggleTickerVisibility()">👁️ MOSTRAR CINTILLO</button>
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.72rem; padding: 8px; font-weight: 800; background: linear-gradient(135deg, #0284C7, #0369A1); color: #FFF; border: none;" onclick="app.updateTickerText()">⚡ TRANSMITIR TEXTO</button>
               </div>
             </div>
           </div>

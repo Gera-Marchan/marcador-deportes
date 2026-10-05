@@ -2020,6 +2020,22 @@ class BaseballOBSApp {
   /* ==========================================================================
      MÓDULO DE CINTILLO EN MOVIMIENTO (TICKER TAPE)
      ========================================================================== */
+  setTickerPreset(type) {
+    const presets = {
+      bienvenida: '📢 ¡BIENVENIDOS A LA TRANSMISIÓN EN VIVO! | SUSCRÍBETE Y COMPARTE EL STREAM CON TUS AMIGOS ⚾⚽',
+      redes: '📱 SÍGUENOS EN NUESTRAS REDES SOCIALES: FACEBOOK, YOUTUBE Y TIKTOK | COMENTA TU EQUIPO FAVORITO EN VIVO',
+      patrocinadores: '🏆 AGRADECIMIENTO ESPECIAL A TODOS NUESTROS PATROCINADORES OFICIALES POR HACER POSIBLE ESTE TORNEO',
+      aviso: '⚡ REVISIÓN DE JUGADA EN VIVO EN PANTALLA | MANTÉN LA SINTONÍA DE LA TRANSMISIÓN'
+    };
+
+    const text = presets[type] || '';
+    if (text) {
+      const input = document.getElementById('tickerTextInput');
+      if (input) input.value = text;
+      this.updateTickerText();
+    }
+  }
+
   toggleTickerVisibility() {
     if (!this.state.tickerState) {
       this.state.tickerState = { visible: false, text: '¡BIENVENIDOS A LA TRANSMISIÓN EN VIVO!' };
@@ -2041,6 +2057,7 @@ class BaseballOBSApp {
       this.state.tickerState = { visible: true, text: txt };
     } else {
       this.state.tickerState.text = txt;
+      this.state.tickerState.visible = true;
     }
     this.renderTickerUI();
     this.saveLocalStorage();
