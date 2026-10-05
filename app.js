@@ -240,17 +240,25 @@ class BaseballOBSApp {
       }
     } catch (e) {}
 
-    try {
-      const key = localStorage.getItem('overlayKey') || 'default';
-      const apiUrl = window.location.protocol.startsWith('http') 
-        ? `/api/state?key=${encodeURIComponent(key)}` 
-        : `http://localhost:8080/api/state?key=${encodeURIComponent(key)}`;
-      fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.state)
-      }).catch(() => {});
-    } catch (e) {}
+    // Sincronización asíncrona en segundo plano desasociada (0ms de retraso en interfaz)
+    this.scheduleServerSync();
+  }
+
+  scheduleServerSync() {
+    if (this._syncTimer) clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => {
+      try {
+        const key = localStorage.getItem('overlayKey') || 'default';
+        const apiUrl = window.location.protocol.startsWith('http') 
+          ? `/api/state?key=${encodeURIComponent(key)}` 
+          : `http://localhost:8080/api/state?key=${encodeURIComponent(key)}`;
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.state)
+        }).catch(() => {});
+      } catch (e) {}
+    }, 40);
   }
 
   initRealtimeSSE() {
