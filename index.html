@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NiñoPrieto! Multi-Deportes OBS</title>
+  
+  <meta name="theme-color" content="#0b0f19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .at-bat-badge {
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ADE80;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+      letter-spacing: 0.05em;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .team-box.at-bat {
+      border: 1.5px solid rgba(34, 197, 94, 0.6) !important;
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.25) !important;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), var(--bg-input, #0F172A));
+    }
+  
+    .color-picker {
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .color-picker::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+
+    .btn-quick-action {
+      font-weight: 900 !important;
+      font-size: 0.72rem !important;
+      padding: 8px 4px !important;
+      border-radius: 8px !important;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-quick-action.hit { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border-color: rgba(56, 189, 248, 0.4); }
+    .btn-quick-action.hit:hover { background: rgba(56, 189, 248, 0.3); }
+    .btn-quick-action.ponche { background: rgba(234, 179, 8, 0.15); color: #FACC15; border-color: rgba(234, 179, 8, 0.4); }
+    .btn-quick-action.ponche:hover { background: rgba(234, 179, 8, 0.3); }
+    .btn-quick-action.homerun { background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.3)); color: #F87171; border-color: #EF4444; }
+    .btn-quick-action.homerun:hover { transform: scale(1.03); }
+    .btn-quick-action.carrera { background: rgba(34, 197, 94, 0.15); color: #4ADE80; border-color: rgba(34, 197, 94, 0.4); }
+    .btn-quick-action.carrera:hover { background: rgba(34, 197, 94, 0.3); }
+
+    /* SECCIÓN DE EFECTOS DE SONIDO Y AUDIO ROUTING */
+    .fx-container {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .fx-title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .fx-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #F59E0B;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .audio-routing-selector {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .routing-btn {
+      flex: 1;
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 5px 4px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #94A3B8;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .routing-btn.active {
+      background: rgba(56, 189, 248, 0.25);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    }
+    .sound-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .btn-sound-fx {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 10px 8px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #F8FAFC;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-sound-fx:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38BDF8;
+      transform: translateY(-1px);
+    }
+    .btn-sound-fx:active {
+      transform: scale(0.96);
+    }
+    .btn-add-sound {
+      grid-column: span 2;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ADE80;
+      border: 1px dashed rgba(34, 197, 94, 0.5);
+    }
+    .btn-add-sound:hover {
+      background: rgba(34, 197, 94, 0.3);
+      border-color: #4ADE80;
+    }
+
+    /* PLATFORM SELECTOR CSS */
+    .platform-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .platform-btn {
+      flex: 1;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(15, 23, 42, 0.8);
+      color: #94A3B8;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .platform-btn.active {
+      background: rgba(245, 158, 11, 0.25);
+      color: #F59E0B;
+      border-color: #F59E0B;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+
+    /* FIX SCROLL Y MODO MODAL AJUSTADO A PANTALLA */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8) !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999 !important;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+    .modal-overlay.open,
+    .modal-overlay.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    .modal-content {
+      background: #0F172A !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 16px !important;
+      padding: 20px !important;
+      width: 100% !important;
+      max-width: 520px !important;
+      max-height: 85vh !important;
+      overflow-y: auto !important;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8) !important;
+      position: relative !important;
+    }
+    .modal-header {
+      position: sticky !important;
+      top: -20px !important;
+      background: #0F172A !important;
+      z-index: 20 !important;
+      padding-top: 4px !important;
+      padding-bottom: 12px !important;
+      margin-bottom: 14px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    .modal-header .btn-icon {
+      font-size: 1.3rem !important;
+      color: #F8FAFC !important;
+      padding: 6px 10px !important;
+      cursor: pointer !important;
+    }
+
+    /* SPORT SWITCHER TABS */
+    .sport-tab-container {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .btn-sport-tab {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-sport-tab:hover {
+      color: #F8FAFC;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-sport-tab.active {
+      background: linear-gradient(135deg, #0284C7, #0369A1);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    /* SOCCER PANEL STYLES */
+    .soccer-clock-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid #38BDF8;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+    .soccer-time-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #38BDF8;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+      line-height: 1;
+    }
+    .soccer-period-badge {
+      background: #0284C7;
+      color: #FFF;
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 2px 10px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+    .btn-timer-action {
+      font-size: 0.9rem;
+      font-weight: 900;
+      padding: 10px 20px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10B981, #059669);
+      color: #FFF;
+      border: 1px solid #34D399;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-timer-action.running {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      border-color: #FCD34D;
+    }
+
+  </style>
+  <script src="obs-websocket.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- BARRA SUPERIOR DE ESTADO Y CONTROL -->
+    <header class="header" style="display: flex; flex-direction: column; gap: 12px; padding: 14px 20px; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; margin-bottom: 16px;">
+      
+      <!-- FILA SUPERIOR: MARCA, DEPORTES Y PERFIL DE USUARIO -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        
+        <!-- MARCA LOGO Y TITULO -->
+        <div class="brand-section" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M2 12h20"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title" style="font-weight: 800; font-size: 1.1rem; white-space: nowrap; color: #fff;">NiñoPrieto! Multi-Deportes</div>
+            <div class="brand-subtitle" style="font-size: 0.75rem; color: #94A3B8;">Panel de Transmisión en Vivo</div>
+          </div>
+        </div>
+
+        <!-- SELECTOR DE DEPORTE (CENTRO) -->
+        <div class="sport-tab-container" style="display: flex; align-items: center; gap: 8px;">
+          <button id="tabSportBaseball" class="btn-sport-tab active" onclick="app.setSport('baseball')">⚾ BÉISBOL</button>
+          <button id="tabSportSoccer" class="btn-sport-tab" onclick="app.setSport('soccer')">⚽ FÚTBOL</button>
+        </div>
+
+        <!-- PERFIL DE USUARIO (DERECHA) -->
+        <div class="user-bar" style="display: flex; align-items: center; gap: 10px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 30px; padding: 4px 14px 4px 8px;">
+          <img id="userAvatar" class="user-avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #38BDF8; object-fit: cover;">
+          <span id="userNameText" class="user-name" style="font-size: 0.82rem; font-weight: 700; color: #f8fafc; white-space: nowrap;">Usuario</span>
+          
+          <button class="btn-copy-obs" onclick="copyObsOverlayUrl()" title="Copiar URL para OBS Browser Source" style="background: linear-gradient(135deg, #00c6ff, #0072ff); color: #fff; border: none; font-size: 0.75rem; font-weight: 800; padding: 6px 14px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            🔗 Copiar Enlace OBS
+          </button>
+
+          <button class="btn-logout" onclick="logoutUser()" title="Cerrar Sesión" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.75rem; font-weight: 800; padding: 6px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap;">
+            🚪 Salir
+          </button>
+        </div>
+
+      </div>
+
+      <!-- FILA INFERIOR: BADGES DE CONEXIÓN Y CONTROLES OBS -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px; flex-wrap: wrap;">
+        
+        <!-- ESTADOS DE CONEXIÓN -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div id="realtimeSyncBadge" class="badge connected" title="Dispositivos y Overlays conectados en tiempo real por SSE (<5ms)" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; cursor: default;">
+            <span class="dot" style="background: #38BDF8; box-shadow: 0 0 8px #38BDF8;"></span>
+            <span id="realtimeSyncText">⚡ REALTIME (BUSCANDO)</span>
+          </div>
+
+          <div id="obsStatusBadge" class="badge disconnected" onclick="app.openConfigModal()" style="padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+            <span class="dot"></span>
+            <span id="obsStatusText">OBS DESCONECTADO</span>
+          </div>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN Y HERRAMIENTAS -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btnRecordToggle" class="btn-stream off" title="Iniciar/Detener Grabación Local en OBS" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.2);" onclick="app.toggleRecording()">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <circle cx="12" cy="12" r="8"/>
+            </svg>
+            <span id="recordStatusText">📹 GRABAR</span>
+          </button>
+  
+          <button id="btnStreamToggle" class="btn-stream off" onclick="app.toggleStream()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span id="streamStatusText">TRANSMISIÓN</span>
+          </button>
+
+          <button id="btnMobileToggle" class="btn-icon" title="Modo Celular / Tablet" onclick="app.toggleMobileView()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </button>
+
+          <button class="btn-icon" title="Ver Marcador en Vivo (Overlay OBS)" onclick="openLiveOverlayWithKey()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+
+          <button class="btn-icon" title="Configuración de Conexión OBS" onclick="app.openConfigModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- PANEL PRINCIPAL DASHBOARD (4 BLOQUES ORIGINALES) -->
+    <main class="main-grid">
+
+            <!-- BLOQUE 1: MODOS DE ESCENA HTML & OVERLAYS MASTER -->
+      <section class="block-card col-scenes">
+        <div class="block-header">
+          <div class="block-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+              <line x1="7" y1="2" x2="7" y2="22"/>
+              <line x1="17" y1="2" x2="17" y2="22"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+            </svg>
+            1. ESCENA ÚNICA (PLANTILLAS EN VIVO)
+          </div>
+          <span style="font-size: 0.65rem; color: #38BDF8; font-weight: 800; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.4);">HTML MASTER</span>
+        </div>
+
+        <!-- BOTONES DE VISTAS Y PLANTILLAS EN VIVO -->
+        <div class="html-scenes-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px;">
+          <button id="btnModeMarcador" class="btn-html-scene active" onclick="app.setScreenMode('marcador')">
+            <span class="scene-icon">🔴</span>
+            <div class="scene-info">
+              <span class="scene-title">EN VIVO / MARCADOR</span>
+              <span class="scene-desc">Cámara transparente</span>
+            </div>
+          </button>
+          <button id="btnModeEspera" class="btn-html-scene" onclick="app.setScreenMode('espera')">
+            <span class="scene-icon">⏳</span>
+            <div class="scene-info">
+              <span class="scene-title">ESPERA / EN BREVE</span>
+              <span class="scene-desc">Pantalla de inicio</span>
+            </div>
+          </button>
+          <button id="btnModeBienvenida" class="btn-html-scene" onclick="app.setScreenMode('bienvenida')">
+            <span class="scene-icon">👋</span>
+            <div class="scene-info">
+              <span class="scene-title">BIENVENIDA / PREVIA</span>
+              <span class="scene-desc">Logos VS Equipos</span>
+            </div>
+          </button>
+          <button id="btnModeMedioTiempo" class="btn-html-scene" onclick="app.setScreenMode('medio_tiempo')">
+            <span class="scene-icon">⏸️</span>
+            <div class="scene-info">
+              <span class="scene-title">MEDIO TIEMPO</span>
+              <span class="scene-desc">Resumen marcador</span>
+            </div>
+          </button>
+          <button id="btnModePatrocinadores" class="btn-html-scene" onclick="app.setScreenMode('patrocinadores_full')">
+            <span class="scene-icon">📢</span>
+            <div class="scene-info">
+              <span class="scene-title">PATROCINADORES FULL</span>
+              <span class="scene-desc">Carrusel gigante</span>
+            </div>
+          </button>
+          <button id="btnModeProblemas" class="btn-html-scene" onclick="app.setScreenMode('problemas')">
+            <span class="scene-icon">⚠️</span>
+            <div class="scene-info">
+              <span class="scene-title">FALLA TÉCNICA</span>
+              <span class="scene-desc">Interrupción</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- CONTROL DE MARCO DE CÁMARA OPCIONAL -->
+        <div style="margin-bottom: 12px;">
+          <button id="btnToggleFrame" class="btn-action-sm" style="width: 100%; padding: 8px 10px; font-weight: 800; font-size: 0.72rem; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38BDF8; cursor: pointer; transition: all 0.2s ease;" onclick="app.toggleCameraFrame()">
+            🖼️ MARCO CÁMARA: DESACTIVADO (OFF)
+          </button>
+        </div>
+
+        <!-- CAMBIO DE ESCENAS OBS (OPCIONAL / OCULTO POR DEFECTO) -->
+        <div id="obsScenesOptionalSection" style="display: none; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+          <span style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.05em;">CAMBIO DE ESCENAS OBS (AVANZADO)</span>
+          <div class="scene-grid" style="margin-top: 6px;">
+            <button id="btnSceneEspera" class="btn-scene" onclick="app.changeScene('ESPERA')">
+              <span class="scene-name">ESPERA</span>
+            </button>
+            <button id="btnSceneCampo" class="btn-scene" onclick="app.changeScene('CAMPO')">
+              <span class="scene-name">CAMPO</span>
+            </button>
+            <button id="btnSceneHome" class="btn-scene" onclick="app.changeScene('HOME')">
+              <span class="scene-name">HOME</span>
+            </button>
+            <button id="btnSceneRepeticion" class="btn-scene" onclick="app.changeScene('REPETICIÓN')">
+              <span class="scene-name">REPETICIÓN</span>
+            </button>
+          </div>
+          <div id="dynamicSceneContainer" style="display:none; flex-direction:column; gap:6px; margin-top:12px;">
+            <span style="font-size:0.75rem; font-weight:800; color:var(--accent-blue);">OTRAS ESCENAS EN OBS</span>
+            <div id="dynamicSceneGrid" class="scene-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 2: MARCADOR & EQUIPOS -->
+      <section class="block-card col-scoreboard">
+        <div class="block-header">
+          <div class="block-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            2. MARCADOR & EQUIPOS
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-swap-teams" title="Intercambiar Visita / Local" onclick="app.swapTeams()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+                <polyline points="8 21 3 21 3 16"/><line x1="20" y1="4" x2="3" y2="21"/>
+              </svg>
+            </button>
+            <button class="btn-action-sm danger" style="padding:4px 12px; font-size:0.75rem; font-weight:800; border-radius:14px; background:rgba(239, 68, 68, 0.2); border-color:#EF4444; color:#F87171;" title="Reiniciar Partido Completo para Nuevo Juego" onclick="app.startNewGame()">
+              🔄 NUEVO JUEGO
+            </button>
+          </div>
+        </div>
+
+        <div class="scoreboard-container">
+          <!-- EQUIPO VISITA -->
+          <div class="team-box at-bat" id="teamBoxVisita">
+            <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:6px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                <input type="color" id="visitaColorInput" value="#38BDF8" class="color-picker" title="Color de Visita" onchange="app.updateTeamColors()">
+                <input type="text" id="visitaNameInput" class="team-name-input" value="VISITA" onchange="app.updateTeamNames()" style="flex:1; min-width:60px;">
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <img id="previewVisitaLogo" src="" alt="Logo Visita" style="display:none; width:24px; height:24px; object-fit:contain; border-radius:4px; border:1px solid rgba(255,255,255,0.2);">
+                <button class="btn-action-sm" style="padding:3px 7px; font-size:0.65rem; font-weight:800; border-radius:6px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#E2E8F0;" onclick="document.getElementById('fileVisitaLogo').click()" title="Subir escudo o logo de equipo">🖼️ ESCUDO</button>
+                <input type="file" id="fileVisitaLogo" accept="image/*" style="display:none;" onchange="app.uploadTeamLogo('visita', event)">
+                <button id="btnRemoveVisitaLogo" class="btn-action-sm danger" style="display:none; padding:2px 5px; font-size:0.6rem; border-radius:6px;" onclick="app.removeTeamLogo('visita')" title="Quitar logo">❌</button>
+                <span id="atBatBadgeVisita" class="at-bat-badge">AL BATE</span>
+              </div>
+            </div>
+            
+            <div class="score-control">
+              <button class="btn-stepper" onclick="app.changeScore('visita', -1)">-</button>
+              <span id="visitaScore" class="score-number">0</span>
+              <button class="btn-stepper" onclick="app.changeScore('visita', 1)">+</button>
+            </div>
+
+            <div class="team-stats">
+              <div class="stat-item">
+                <span class="stat-label">HITS</span>
+                <div class="stat-value-box">
+                  <button class="btn-mini-stepper" onclick="app.changeStat('visitaHits', -1)">-</button>
+                  <span id="visitaHits" class="stat-val">0</span>
+                  <button class="btn-mini-stepper" onclick="app.changeStat('visitaHits', 1)">+</button>
+                </div>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">ERR</span>
+                <div class="stat-value-box">
+                  <button class="btn-mini-stepper" onclick="app.changeStat('visitaErrors', -1)">-</button>
+                  <span id="visitaErrors" class="stat-val">0</span>
+                  <button class="btn-mini-stepper" onclick="app.changeStat('visitaErrors', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vs-divider">
+            <span>VS</span>
+          </div>
+
+          <!-- EQUIPO LOCAL -->
+          <div class="team-box" id="teamBoxLocal">
+            <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:6px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:0;">
+                <input type="color" id="localColorInput" value="#EF4444" class="color-picker" title="Color de Local" onchange="app.updateTeamColors()">
+                <input type="text" id="localNameInput" class="team-name-input" value="LOCAL" onchange="app.updateTeamNames()" style="flex:1; min-width:60px;">
+              </div>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <img id="previewLocalLogo" src="" alt="Logo Local" style="display:none; width:24px; height:24px; object-fit:contain; border-radius:4px; border:1px solid rgba(255,255,255,0.2);">
+                <button class="btn-action-sm" style="padding:3px 7px; font-size:0.65rem; font-weight:800; border-radius:6px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#E2E8F0;" onclick="document.getElementById('fileLocalLogo').click()" title="Subir escudo o logo de equipo">🖼️ ESCUDO</button>
+                <input type="file" id="fileLocalLogo" accept="image/*" style="display:none;" onchange="app.uploadTeamLogo('local', event)">
+                <button id="btnRemoveLocalLogo" class="btn-action-sm danger" style="display:none; padding:2px 5px; font-size:0.6rem; border-radius:6px;" onclick="app.removeTeamLogo('local')" title="Quitar logo">❌</button>
+                <span id="atBatBadgeLocal" class="at-bat-badge" style="display:none;">AL BATE</span>
+              </div>
+            </div>
+            
+            <div class="score-control">
+              <button class="btn-stepper" onclick="app.changeScore('local', -1)">-</button>
+              <span id="localScore" class="score-number">0</span>
+              <button class="btn-stepper" onclick="app.changeScore('local', 1)">+</button>
+            </div>
+
+            <div class="team-stats">
+              <div class="stat-item">
+                <span class="stat-label">HITS</span>
+                <div class="stat-value-box">
+                  <button class="btn-mini-stepper" onclick="app.changeStat('localHits', -1)">-</button>
+                  <span id="localHits" class="stat-val">0</span>
+                  <button class="btn-mini-stepper" onclick="app.changeStat('localHits', 1)">+</button>
+                </div>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">ERR</span>
+                <div class="stat-value-box">
+                  <button class="btn-mini-stepper" onclick="app.changeStat('localErrors', -1)">-</button>
+                  <span id="localErrors" class="stat-val">0</span>
+                  <button class="btn-mini-stepper" onclick="app.changeStat('localErrors', 1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+            <!-- BLOQUE 3: SITUACIÓN DE JUEGO (DISEÑO COMPACTO Y EFICIENTE) -->
+      <section class="block-card col-situation">
+        <div class="block-header" style="padding-bottom: 6px; margin-bottom: 8px;">
+          <div class="block-title" style="font-size: 0.88rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20M12 2a14.5 14.5 0 0 1 0 20"/>
+            </svg>
+            3. SITUACIÓN DE JUEGO
+          </div>
+        </div>
+
+        <div id="baseballControlPanel">
+          <!-- 1. INNING SELECTOR (FILA SUPERIOR COMPACTA) -->
+          <div class="compact-inning-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 6px; background: rgba(15, 23, 42, 0.85); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12); margin-bottom: 8px;">
+            <div class="inning-display" style="gap: 4px; font-size: 1.3rem;">
+              <span id="inningHalfArrow" class="inning-arrow">▲</span>
+              <span id="inningNumDisplay" style="font-weight: 900;">1</span>
+            </div>
+            <div class="inning-btns" style="display: flex; gap: 3px;">
+              <button id="btnInningAlta" class="btn-pill active" style="padding: 3px 8px; font-size: 0.68rem;" onclick="app.setInningHalf('alta')">ALTA</button>
+              <button id="btnInningBaja" class="btn-pill" style="padding: 3px 8px; font-size: 0.68rem;" onclick="app.setInningHalf('baja')">BAJA</button>
+              <button class="btn-pill" style="padding: 3px 8px; font-size: 0.68rem;" onclick="app.changeInning(1)">+1 INNING</button>
+              <button class="btn-pill" style="padding: 3px 6px; font-size: 0.68rem;" onclick="app.changeInning(-1)">-1</button>
+            </div>
+          </div>
+
+          <!-- 2. GRID COMPACTO: CONTEO (IZQ) + DIAMANTE DE BASES (DER) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            
+            <!-- CONTEO B - S - O -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; flex-direction: column; gap: 3px;">
+                <div class="count-row" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span class="count-label" style="font-size: 0.62rem; font-weight: 800; color: #94A3B8;">BALLS</span>
+                  <div class="count-dots" style="display: flex; gap: 3px;">
+                    <button class="dot-light" id="dotB1" style="width: 18px; height: 18px;" onclick="app.toggleCount('balls', 1)"></button>
+                    <button class="dot-light" id="dotB2" style="width: 18px; height: 18px;" onclick="app.toggleCount('balls', 2)"></button>
+                    <button class="dot-light" id="dotB3" style="width: 18px; height: 18px;" onclick="app.toggleCount('balls', 3)"></button>
+                    <button class="dot-light" id="dotB4" style="width: 18px; height: 18px;" onclick="app.toggleCount('balls', 4)"></button>
+                  </div>
+                </div>
+
+                <div class="count-row" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span class="count-label" style="font-size: 0.62rem; font-weight: 800; color: #94A3B8;">STRIKES</span>
+                  <div class="count-dots" style="display: flex; gap: 3px;">
+                    <button class="dot-light" id="dotS1" style="width: 18px; height: 18px;" onclick="app.toggleCount('strikes', 1)"></button>
+                    <button class="dot-light" id="dotS2" style="width: 18px; height: 18px;" onclick="app.toggleCount('strikes', 2)"></button>
+                    <button class="dot-light" id="dotS3" style="width: 18px; height: 18px;" onclick="app.toggleCount('strikes', 3)"></button>
+                  </div>
+                </div>
+
+                <div class="count-row" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span class="count-label" style="font-size: 0.62rem; font-weight: 800; color: #94A3B8;">OUTS</span>
+                  <div class="count-dots" style="display: flex; gap: 3px;">
+                    <button class="dot-light" id="dotO1" style="width: 18px; height: 18px;" onclick="app.toggleCount('outs', 1)"></button>
+                    <button class="dot-light" id="dotO2" style="width: 18px; height: 18px;" onclick="app.toggleCount('outs', 2)"></button>
+                    <button class="dot-light" id="dotO3" style="width: 18px; height: 18px;" onclick="app.toggleCount('outs', 3)"></button>
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn-action-sm danger" style="width: 100%; margin-top: 4px; padding: 3px; font-size: 0.62rem; font-weight: 800; border-radius: 4px;" onclick="app.resetCount()">
+                RESET CONTEO
+              </button>
+            </div>
+
+            <!-- DIAMANTE DE BASES COMPACTO -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+              <div class="diamond-svg-container" style="width: 70px; height: 70px; margin: 2px 0; position: relative;">
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                  <g class="base-group" style="cursor: pointer;" onclick="app.toggleBase('b2')">
+                    <polygon id="base2" class="base-path" points="50,12 66,28 50,44 34,28" />
+                    <text x="50" y="28" text-anchor="middle" class="base-text">2B</text>
+                  </g>
+                  <g class="base-group" style="cursor: pointer;" onclick="app.toggleBase('b3')">
+                    <polygon id="base3" class="base-path" points="26,36 42,52 26,68 10,52" />
+                    <text x="26" y="52" text-anchor="middle" class="base-text">3B</text>
+                  </g>
+                  <g class="base-group" style="cursor: pointer;" onclick="app.toggleBase('b1')">
+                    <polygon id="base1" class="base-path" points="74,36 90,52 74,68 58,52" />
+                    <text x="74" y="52" text-anchor="middle" class="base-text">1B</text>
+                  </g>
+                </svg>
+              </div>
+
+              <div style="display: flex; gap: 3px; width: 100%;">
+                <button class="btn-action-sm" style="flex: 1; padding: 2px; font-size: 0.6rem; font-weight: 800; border-radius: 4px;" onclick="app.clearBases()">LIMPIAR</button>
+                <button class="btn-action-sm" style="flex: 1; padding: 2px; font-size: 0.6rem; font-weight: 800; border-radius: 4px;" onclick="app.fillBases()">LLENAS</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 3. ACCIONES RÁPIDAS JUGADA (FILA ÚNICA HORIZONTAL COMPACTA) -->
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px;">
+            <button class="btn-quick-action hit" style="padding: 6px 2px !important; font-size: 0.65rem !important;" onclick="app.quickHit()">⚾ HIT</button>
+            <button class="btn-quick-action ponche" style="padding: 6px 2px !important; font-size: 0.65rem !important;" onclick="app.quickStrikeout()">⚡ PONCHE K</button>
+            <button class="btn-quick-action homerun" style="padding: 6px 2px !important; font-size: 0.65rem !important;" onclick="app.quickHomeRun()">💥 HOME RUN</button>
+            <button class="btn-quick-action homerun" style="background: linear-gradient(135deg, #F59E0B, #DC2626); padding: 6px 2px !important; font-size: 0.65rem !important;" onclick="app.quickGrandSlam()">🔥 GRAND SLAM</button>
+            <button class="btn-quick-action carrera" style="padding: 6px 2px !important; font-size: 0.65rem !important;" onclick="app.quickRun()">🏃 +1 RUN</button>
+          </div>
+        </div>
+
+        <!-- MÓDULO FÚTBOL EN BLOQUE 3 COMPACTO -->
+        <div id="soccerControlPanel" style="display:none; flex-direction:column; gap:8px;">
+          <!-- Soccer Timer & Period Controls -->
+          <div class="soccer-clock-box" style="padding: 8px;">
+            <div id="soccerClockDisplay" class="soccer-time-text" style="font-size: 2rem;">00:00</div>
+            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+              <span id="soccerPeriodDisplay" class="soccer-period-badge" style="font-size:0.75rem;">1T</span>
+              <span id="soccerAddedMinutesDisplay" style="font-size:1rem; font-weight:900; color:#F59E0B;"></span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+            <button id="btnSoccerPlayPause" class="btn-timer-action" style="padding:6px; font-size:0.72rem;" onclick="app.toggleSoccerTimer()">► INICIAR</button>
+            <button class="btn-action-sm" style="padding:6px; font-size:0.72rem;" onclick="app.setSoccerTimerSeconds(0)">RESET RELOJ</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:3px;">
+            <button class="btn-pill" style="padding:4px 2px; font-size:0.62rem;" onclick="app.setSoccerPeriod('1T')">1T (00')</button>
+            <button class="btn-pill" style="padding:4px 2px; font-size:0.62rem;" onclick="app.setSoccerPeriod('2T')">2T (45')</button>
+            <button class="btn-pill" style="padding:4px 2px; font-size:0.62rem;" onclick="app.setSoccerPeriod('ET1')">ET1 (90')</button>
+            <button class="btn-pill" style="padding:4px 2px; font-size:0.62rem;" onclick="app.setSoccerPeriod('ET2')">ET2 (105')</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+            <button class="btn-action-sm" style="padding:4px; font-size:0.65rem;" onclick="app.setSoccerAddedMinutes(3)">+3' EXTRA</button>
+            <button class="btn-action-sm" style="padding:4px; font-size:0.65rem;" onclick="app.setSoccerAddedMinutes(5)">+5' EXTRA</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px; margin-top:2px;">
+            <button id="btnGoalVisita" class="btn-quick-action carrera" style="padding:6px !important;" onclick="app.quickGoal('visita')">⚽ GOL (VISITA)</button>
+            <button id="btnGoalLocal" class="btn-quick-action carrera" style="padding:6px !important;" onclick="app.quickGoal('local')">⚽ GOL (LOCAL)</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:3px;">
+            <button class="btn-quick-action ponche" style="font-size:0.6rem !important; padding:4px 2px !important;" onclick="app.quickYellowCard('visita')">🟨 AMARILLA V</button>
+            <button class="btn-quick-action ponche" style="font-size:0.6rem !important; padding:4px 2px !important;" onclick="app.quickYellowCard('local')">🟨 AMARILLA L</button>
+            <button class="btn-quick-action hit" style="font-size:0.6rem !important; padding:4px 2px !important;" onclick="app.quickRedCard('visita')">🟥 ROJA V</button>
+            <button class="btn-quick-action hit" style="font-size:0.6rem !important; padding:4px 2px !important;" onclick="app.quickRedCard('local')">🟥 ROJA L</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">
+            <button class="btn-quick-action ponche" style="padding:6px !important;" onclick="app.quickVAR()">📺 VAR</button>
+            <button class="btn-quick-action hit" style="padding:6px !important;" onclick="app.quickPenalty()">⚽ PENALTY</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOQUE 4: MEZCLADOR AUDIO -->
+      <section class="block-card col-audio">
+        <div class="block-header">
+          <div class="block-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            4. MEZCLADOR AUDIO
+          </div>
+        </div>
+
+        <div class="audio-controls">
+          <!-- CANAL 1: NARRADOR -->
+          <div class="audio-channel">
+            <div class="channel-top">
+              <span class="channel-name" id="channelLabel1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                </svg>
+                Narrador
+              </span>
+              <span id="audioDb1" class="channel-db">0 dB</span>
+            </div>
+            <div class="slider-container">
+              <button id="audioMute1" class="btn-mute" onclick="app.toggleMute(1)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                </svg>
+              </button>
+              <input type="range" id="audioSlider1" class="volume-slider" min="0" max="100" value="100" oninput="app.setVolume(1, this.value)">
+            </div>
+            <div class="audio-meter">
+              <div id="audioMeter1" class="meter-fill"></div>
+            </div>
+          </div>
+
+          <!-- CANAL 2: AMBIENTE -->
+          <div class="audio-channel">
+            <div class="channel-top">
+              <span class="channel-name" id="channelLabel2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 9l-6 5 6 5V9z"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                Ambiente
+              </span>
+              <span id="audioDb2" class="channel-db">0 dB</span>
+            </div>
+            <div class="slider-container">
+              <button id="audioMute2" class="btn-mute" onclick="app.toggleMute(2)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                </svg>
+              </button>
+              <input type="range" id="audioSlider2" class="volume-slider" min="0" max="100" value="100" oninput="app.setVolume(2, this.value)">
+            </div>
+            <div class="audio-meter">
+              <div id="audioMeter2" class="meter-fill"></div>
+            </div>
+          </div>
+
+          <!-- CANAL 3: MÚSICA -->
+          <div class="audio-channel">
+            <div class="channel-top">
+              <span class="channel-name" id="channelLabel3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18V5l12-2v13"/>
+                  <circle cx="6" cy="18" r="3"/>
+                  <circle cx="18" cy="16" r="3"/>
+                </svg>
+                Música
+              </span>
+              <span id="audioDb3" class="channel-db">0 dB</span>
+            </div>
+            <div class="slider-container">
+              <button id="audioMute3" class="btn-mute" onclick="app.toggleMute(3)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                </svg>
+              </button>
+              <input type="range" id="audioSlider3" class="volume-slider" min="0" max="100" value="100" oninput="app.setVolume(3, this.value)">
+            </div>
+            <div class="audio-meter">
+              <div id="audioMeter3" class="meter-fill"></div>
+            </div>
+          </div>
+
+          <!-- CANAL 4: MEZCLADOR 4 -->
+          <div class="audio-channel">
+            <div class="channel-top">
+              <span class="channel-name" id="channelLabel4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Mezclador 4
+              </span>
+              <span id="audioDb4" class="channel-db">0 dB</span>
+            </div>
+            <div class="slider-container">
+              <button id="audioMute4" class="btn-mute" onclick="app.toggleMute(4)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                </svg>
+              </button>
+              <input type="range" id="audioSlider4" class="volume-slider" min="0" max="100" value="100" oninput="app.setVolume(4, this.value)">
+            </div>
+          <!-- SECCIÓN DE EFECTOS DE SONIDO ESTADIO (SOUND FX) -->
+          <div class="fx-container">
+            <div class="fx-title-bar">
+              <span class="fx-title">
+                🔊 SONIDOS ESTADIO FX
+              </span>
+              <span style="font-size:0.65rem; color:#94A3B8; font-weight:700;">SALIDA AUDIO:</span>
+            </div>
+
+            <!-- SELECTOR DE RUTA DE SALIDA DE AUDIO -->
+            <div class="audio-routing-selector">
+              <button id="btnRouteLocal" class="routing-btn" onclick="app.setAudioRouting('local')">📱 SOLO LOCAL</button>
+              <button id="btnRouteOBS" class="routing-btn" onclick="app.setAudioRouting('obs')">🎥 SOLO OBS</button>
+              <button id="btnRouteBoth" class="routing-btn active" onclick="app.setAudioRouting('both')">🎧 EN AMBOS</button>
+            </div>
+
+            <!-- GRID DE BOTONES DE SONIDOS -->
+            <div class="sound-grid" id="soundFxGrid">
+              <button class="btn-sound-fx" onclick="app.playSound('aplausos')">👏 Aplausos</button>
+              <button class="btn-sound-fx" onclick="app.playSound('organo')">🎺 Órgano Charge!</button>
+              <button class="btn-sound-fx" onclick="app.playSound('batazo')">⚾ Batazo</button>
+              <button class="btn-sound-fx" onclick="app.playSound('out_bell')">🔔 Strikeout Bell</button>
+              <button class="btn-sound-fx btn-add-sound" onclick="app.openAddSoundModal()">➕ AGREGAR MÁS SONIDOS</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- BLOQUE 5: PATROCINADORES Y CINTILLO DE NOTICIAS -->
+      <section class="block-card col-ticker-sponsors" style="grid-column: span 12; margin-top: 10px;">
+        <div class="block-header" style="padding-bottom: 6px; margin-bottom: 10px;">
+          <div class="block-title" style="font-size: 0.88rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="14 4 14 9 19 9"/>
+            </svg>
+            5. PATROCINADORES & CINTILLO DE NOTICIAS EN VIVO
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          
+          <!-- SUB-SECCIÓN PATROCINADORES STREAM -->
+          <div style="background: rgba(15,23,42,0.7); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.3);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #F59E0B; letter-spacing: 0.05em; text-transform: uppercase;">
+                📢 PATROCINADORES STREAM (ESQUINA)
+              </span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span id="sponsorStatusBadge" class="at-bat-badge" style="background: rgba(34,197,94,0.2); color: #4ADE80; font-size: 0.6rem;">VISIBLE</span>
+                <button class="btn-action-sm" style="padding: 2px 8px; font-size: 0.65rem;" onclick="app.openSponsorsModal()">⚙️ GESTIONAR</button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(30,41,59,0.8); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                  <img id="currentSponsorLogoDisplay" src="" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; display: none;" alt="Sponsor">
+                  <div style="display: flex; flex-direction: column; overflow: hidden;">
+                    <span id="currentSponsorDisplay" style="font-size: 0.8rem; font-weight: 900; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Deportes Max</span>
+                    <span id="currentSloganDisplay" style="font-size: 0.65rem; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Tu Tienda Deportiva</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 4px;">
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 4px;" id="btnToggleSponsorVis" onclick="app.toggleSponsorVisibility()">👁️ OCULTAR</button>
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 4px;" onclick="app.nextSponsor()">▶️ SIGUIENTE</button>
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 4px;" id="btnToggleAutoRotate" onclick="app.toggleSponsorAutoRotate()">🔄 AUTO: ON</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-SECCIÓN CINTILLO DE NOTICIAS (TICKER TAPE) -->
+          <div style="background: rgba(15,23,42,0.7); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.3);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #38BDF8; letter-spacing: 0.05em; text-transform: uppercase;">
+                📰 CINTILLO EN MOVIMIENTO (NOTICIAS / TICKER)
+              </span>
+              <span id="tickerStatusBadge" class="at-bat-badge" style="background: rgba(239,68,68,0.2); color: #F87171; font-size: 0.6rem;">OCULTO</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <input type="text" id="tickerTextInput" class="form-input" placeholder="Escribe el texto o noticias..." value="¡BIENVENIDOS A LA TRANSMISIÓÓN EN VIVO! | SUSCRÍBETE A NUESTRO CANAL | COMENTA TU EQUIPO FAVORITO" style="font-size: 0.75rem; padding: 6px 10px;">
+
+              <div style="display: flex; gap: 4px;">
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 5px; background: rgba(34,197,94,0.15); color: #4ADE80; border-color: rgba(34,197,94,0.4);" id="btnToggleTicker" onclick="app.toggleTickerVisibility()">👁️ MOSTRAR CINTILLO</button>
+                <button class="btn-action-sm" style="flex: 1; font-size: 0.68rem; padding: 5px; background: rgba(56,189,248,0.15); color: #38BDF8; border-color: rgba(56,189,248,0.4);" onclick="app.updateTickerText()">✏️ ACTUALIZAR TEXTO</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+    </main>
+
+  </div>
+
+  <!-- MODAL DE AGREGAR SONIDO CUSTOM -->
+  <div id="addSoundModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Agregar Nuevo Efecto de Sonido</h3>
+        <button class="btn-icon" onclick="app.closeAddSoundModal()">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Nombre del Sonido / Botón:</label>
+          <input type="text" id="soundNameInput" class="form-input" placeholder="ej. Grito de Ampáyer, Corneta, etc.">
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">Ruta o URL del archivo de sonido (MP3 / WAV):</label>
+          <input type="text" id="soundUrlInput" class="form-input" placeholder="ej. sounds/mi_sonido.mp3">
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">O selecciona un archivo desde tu dispositivo:</label>
+          <input type="file" id="soundFileInput" accept="audio/*" class="form-input" onchange="app.handleSoundFileSelected(event)">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn-action-sm" onclick="app.closeAddSoundModal()">CANCELAR</button>
+        <button class="btn-action-sm" style="background:#22C55E; color:#000; font-weight:900;" onclick="app.saveCustomSound()">GUARDAR SONIDO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURACIÓN CONEXIÓN OBS -->
+  <div id="settingsModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ Ajustes del Sistema y OBS</h3>
+          <button class="btn-icon" onclick="app.closeConfigModal()">✕</button>
+        </div>
+
+        <!-- OPCIÓN PRINCIPAL: MOSTRAR/OCULTAR ESCENAS OBS EN PANEL DE CONTROL -->
+        <div style="background: rgba(30, 41, 59, 0.9); padding: 14px; border-radius: 12px; border: 1.5px solid #38BDF8; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);">
+          <label style="display:block; font-size:0.75rem; font-weight:900; color:#38BDF8; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">⚙️ VISIBILIDAD DE ESCENAS OBS EN EL PANEL</label>
+          <button id="btnToggleObsScenesConfig" type="button" class="btn-action-sm" style="width:100%; padding:10px 14px; font-weight:900; font-size:0.8rem; border-radius:8px; background:rgba(15,23,42,0.9); border:1.5px solid rgba(255,255,255,0.2); color:#94A3B8; cursor:pointer; transition:all 0.2s ease;" onclick="app.toggleObsScenesSection()">
+            ⚙️ MOSTRAR ESCENAS OBS EN PANEL: OFF (OCULTO POR DEFECTO)
+          </button>
+        </div>
+
+        <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Dirección IP de la PC (Servidor OBS):</label>
+          <input type="text" id="obsIpInput" class="form-input" placeholder="ej. 192.168.1.100 o localhost">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Puerto WebSocket:</label>
+          <input type="number" id="obsPortInput" class="form-input" value="4455">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Contraseña OBS:</label>
+          <input type="password" id="obsPassInput" class="form-input" placeholder="Opcional">
+        </div>
+      </div>
+
+      
+        <div class="form-group full" style="margin-top:10px;">
+          <label class="form-label" style="color:var(--accent-blue);">Nombres de Fuentes de Audio en OBS (Mezclador):</label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Canal 1 (Narrador):</label>
+          <input type="text" id="srcAudioNarrador" class="form-input" value="NARRADOR">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Canal 2 (Ambiente):</label>
+          <input type="text" id="srcAudioAmbiente" class="form-input" value="AMBIENTE">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Canal 3 (Música / Mic 2):</label>
+          <input type="text" id="srcAudioMic2" class="form-input" value="Música">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Canal 4 (Mezclador 4):</label>
+          <input type="text" id="srcAudioAux4" class="form-input" value="Mezclador 4">
+        </div>
+
+        <div class="form-group full" style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+          <label class="form-label" style="color:#34D399; font-weight:800;">🎨 TEMA VISUAL SCOREBUG OBS:</label>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:6px;">
+            <button type="button" class="btn-action-sm btn-theme-selector" data-theme="dark-pro" style="padding:10px; font-weight:800;" onclick="app.setScorebugTheme('dark-pro')">🌌 DARK PRO (Azul/Cian)</button>
+            <button type="button" class="btn-action-sm btn-theme-selector" data-theme="champions" style="padding:10px; font-weight:800; color:#FCD34D;" onclick="app.setScorebugTheme('champions')">🏆 CHAMPIONS (Azul/Oro)</button>
+            <button type="button" class="btn-action-sm btn-theme-selector" data-theme="red-flame" style="padding:10px; font-weight:800; color:#F87171;" onclick="app.setScorebugTheme('red-flame')">🔥 RED FLAME (Fuego/Rojo)</button>
+            <button type="button" class="btn-action-sm btn-theme-selector" data-theme="minimal" style="padding:10px; font-weight:800;" onclick="app.setScorebugTheme('minimal')">✨ MINIMAL (Cristal)</button>
+          </div>
+        </div>
+
+        <div class="form-group full" style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+          <label class="form-label" style="color:#F59E0B; font-weight:800;">🎥 TRANSMISIÓN EN VIVO (PLATAFORMA):</label>
+        </div>
+
+        <div class="form-group full">
+          <div class="platform-selector">
+            <button type="button" id="btnPlatFB" class="platform-btn active" onclick="app.selectStreamPlatform('facebook')">📘 Facebook</button>
+            <button type="button" id="btnPlatYT" class="platform-btn" onclick="app.selectStreamPlatform('youtube')">🔴 YouTube</button>
+            <button type="button" id="btnPlatTT" class="platform-btn" onclick="app.selectStreamPlatform('tiktok')">🎵 TikTok</button>
+            <button type="button" id="btnPlatCustom" class="platform-btn" onclick="app.selectStreamPlatform('custom')">⚙️ Custom</button>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">Servidor RTMP:</label>
+          <input type="text" id="streamServerInput" class="form-input" value="rtmps://live-api-s.facebook.com:443/rtmp/">
+        </div>
+        <div class="form-group full">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <label class="form-label" style="margin:0;">Clave de Transmisión (Stream Key):</label>
+            <button type="button" class="btn-action-sm" style="padding:2px 8px; font-size:0.65rem;" onclick="app.toggleShowStreamKey()">👁️ Ver / Ocultar</button>
+          </div>
+          <input type="password" id="streamKeyInput" class="form-input" placeholder="Pega tu Clave de Transmisión (Stream Key)">
+        </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn-action-sm" onclick="app.closeConfigModal()">CANCELAR</button>
+        <button class="btn-action-sm danger" style="background:var(--accent-blue); color:#000; border-color:var(--accent-blue);" onclick="app.saveObsSettings()">GUARDAR Y CONECTAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE GESTIÓN DE PATROCINADORES -->
+  <div id="sponsorsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📢 Gestión de Patrocinadores (Banners Stream)</h3>
+        <button class="btn-icon" onclick="app.closeSponsorsModal()">✕</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Tiempo de Rotación Automática (segundos):</label>
+          <input type="number" id="sponsorIntervalInput" class="form-input" value="10" min="3" max="120" onchange="app.updateSponsorInterval(this.value)">
+        </div>
+
+        <div class="form-group full" style="border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:4px;">
+          <label class="form-label" style="color:#F59E0B; font-weight:800;">➕ AGREGAR NUEVO PATROCINADOR:</label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre del Patrocinador / Marca:</label>
+          <input type="text" id="sponsorNameInput" class="form-input" placeholder="ej. Taquería El Pelotero">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Slogan o Texto Secundario (Opcional):</label>
+          <input type="text" id="sponsorSloganInput" class="form-input" placeholder="ej. ¡Los mejores tacos de la ciudad!">
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">Logo (URL de imagen o selecciona un archivo):</label>
+          <input type="text" id="sponsorLogoUrlInput" class="form-input" placeholder="https://ejemplo.com/logo.png">
+          <input type="file" id="sponsorLogoFileInput" accept="image/*" class="form-input" style="margin-top:6px;" onchange="app.handleSponsorLogoFile(event)">
+        </div>
+
+        <div class="form-group full">
+          <button class="btn-action-sm" style="background:#22C55E; color:#000; font-weight:900; width:100%; padding:10px;" onclick="app.addSponsor()">➕ AGREGAR A LA LISTA</button>
+        </div>
+
+        <div class="form-group full" style="border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; margin-top:10px;">
+          <label class="form-label" style="color:var(--accent-blue); font-weight:800;">📋 LISTA DE PATROCINADORES ACTIVOS:</label>
+          <div id="sponsorsListContainer" style="display:flex; flex-direction:column; gap:8px; margin-top:8px; max-height:220px; overflow-y:auto;">
+            <!-- Renderizado dinámico -->
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn-action-sm" onclick="app.closeSponsorsModal()">CERRAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Auth Guard
+    (function checkAuth() {
+      const token = localStorage.getItem('userToken');
+      const overlayKey = localStorage.getItem('overlayKey');
+      if (!token || !overlayKey) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        try {
+          const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+          const avatar = document.getElementById('userAvatar');
+          const name = document.getElementById('userNameText');
+          if (avatar && userData.picture) avatar.src = userData.picture;
+          if (name && userData.name) name.textContent = userData.name;
+        } catch(e) {}
+      });
+    })();
+
+    function copyObsOverlayUrl() {
+      const key = localStorage.getItem('overlayKey') || 'default';
+      const host = window.location.host || 'localhost:8080';
+      const protocol = window.location.protocol;
+      const obsUrl = `${protocol}//${host}/overlay.html?key=${encodeURIComponent(key)}`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(obsUrl).then(() => {
+          alert('✅ ¡Enlace personal para OBS copiado con éxito!\n\nPégalo en OBS como Fuente de Navegador (Browser Source):\n\n' + obsUrl);
+        }).catch(() => {
+          prompt('Copia manualmente este enlace para tu OBS:', obsUrl);
+        });
+      } else {
+        prompt('Copia manualmente este enlace para tu OBS:', obsUrl);
+      }
+    }
+
+    function openLiveOverlayWithKey() {
+      const key = localStorage.getItem('overlayKey') || 'default';
+      window.open(`overlay.html?key=${encodeURIComponent(key)}`, '_blank');
+    }
+
+    function logoutUser() {
+      if (confirm('¿Deseas cerrar tu sesión actual?')) {
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('overlayKey');
+        localStorage.removeItem('userData');
+        window.location.href = '/login.html';
+      }
+    }
+  </script>
+</body>
+</html>

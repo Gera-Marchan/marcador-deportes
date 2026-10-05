@@ -1,0 +1,18 @@
+{
+  "name": "Béisbol Remote OBS",
+  "short_name": "Béisbol OBS",
+  "description": "Control Remoto Táctil para transmisiones de béisbol en OBS Studio",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%2338BDF8'><circle cx='256' cy='256' r='240' fill='%23131B2E' stroke='%2338BDF8' stroke-width='16'/><circle cx='256' cy='256' r='180' fill='none' stroke='%23EF4444' stroke-width='12' stroke-dasharray='30,20'/><text x='256' y='280' font-size='140' font-weight='bold' text-anchor='middle' fill='%23F8FAFC' font-family='sans-serif'>BSB</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

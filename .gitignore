@@ -1,0 +1,15 @@
+# Dependencias de Node (Render las instala automáticamente con 'npm install')
+node_modules/
+npm-debug.log*
+
+# Archivos pesados de instaladores (APKs, ZIPs)
+*.apk
+*.zip
+
+# Base de datos local temporal de desarrollo
+users_db.json
+
+# Archivos del sistema y logs
+.DS_Store
+Thumbs.db
+*.log

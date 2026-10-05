@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión | Marcador Deportes SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: rgba(18, 24, 38, 0.75);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #00f2fe;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% -20%, #1e293b 0%, var(--bg-dark) 80%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glow */
+    .glow-orb {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      filter: blur(40px);
+    }
+
+    .login-card {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
+                  0 0 40px rgba(0, 242, 254, 0.08);
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+      border-radius: 20px;
+      font-size: 34px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0, 114, 255, 0.4);
+    }
+
+    .title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .auth-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .google-btn-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      min-height: 50px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin: 24px 0 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider span {
+      padding: 0 12px;
+    }
+
+    .demo-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      color: #f1f5f9;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .demo-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .status-msg {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status-msg.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .status-msg.success {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #86efac;
+    }
+
+    .footer-text {
+      margin-top: 28px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .client-id-config {
+      margin-top: 20px;
+      text-align: left;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .client-id-config label {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .client-id-config input {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-orb"></div>
+
+  <div class="login-card">
+    <div class="logo-badge">⚾</div>
+    <h1 class="title">Marcador Deportes</h1>
+    <p class="subtitle">Plataforma Multi-usuario para OBS Studio & Streaming</p>
+
+    <div class="auth-section">
+      <!-- Botón dinámico de Google -->
+      <div id="google-btn-container" class="google-btn-wrapper"></div>
+      
+      <div id="status-box" class="status-msg"></div>
+    </div>
+
+    <p class="footer-text">Conéctate para administrar tus marcadores, patrocinadores y configuraciones personales.</p>
+  </div>
+
+  <script>
+    let activeClientId = '';
+
+    // Comprobar si ya está logueado al cargar la página
+    window.addEventListener('DOMContentLoaded', async () => {
+      const savedToken = localStorage.getItem('userToken');
+      if (savedToken) {
+        // Verificar si el token sigue activo
+        try {
+          const checkRes = await fetch('/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${savedToken}` }
+          });
+          const checkData = await checkRes.json();
+          if (checkData.success) {
+            window.location.href = '/index.html';
+            return;
+          }
+        } catch(e) {
+          localStorage.removeItem('userToken');
+        }
+      }
+
+      // Obtener Google Client ID desde el servidor
+      try {
+        const res = await fetch('/api/auth/config');
+        const config = await res.json();
+        const serverClientId = config.googleClientId;
+        const localClientId = localStorage.getItem('custom_google_client_id');
+
+        activeClientId = localClientId || serverClientId;
+        initGoogleAuth(activeClientId);
+      } catch (err) {
+        showStatus('Error al conectar con el servidor', 'error');
+      }
+    });
+
+    function saveCustomClientId(val) {
+      if (val && val.trim()) {
+        localStorage.setItem('custom_google_client_id', val.trim());
+        activeClientId = val.trim();
+        initGoogleAuth(activeClientId);
+        showStatus('Google Client ID actualizado localmente', 'success');
+      }
+    }
+
+    function initGoogleAuth(clientId) {
+      const container = document.getElementById('google-btn-container');
+      container.innerHTML = '';
+
+      if (!clientId || clientId.includes('TU_GOOGLE_CLIENT_ID')) {
+        container.innerHTML = `<p style="color: #fbbf24; font-size: 13px;">⚠️ Ingresa tu Google Client ID abajo para habilitar el botón.</p>`;
+        return;
+      }
+
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse
+        });
+
+        google.accounts.id.renderButton(
+          container,
+          { theme: 'outline', size: 'large', shape: 'pill', width: 320, text: 'signin_with' }
+        );
+      } else {
+        setTimeout(() => initGoogleAuth(clientId), 500);
+      }
+    }
+
+    async function handleGoogleCredentialResponse(response) {
+      showStatus('Autenticando con Google...', 'success');
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: response.credential })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem('userToken', data.token);
+          localStorage.setItem('overlayKey', data.user.overlayKey);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          
+          showStatus(`¡Bienvenido ${data.user.name}! Redirigiendo...`, 'success');
+          setTimeout(() => {
+            window.location.href = '/index.html';
+          }, 1000);
+        } else {
+          showStatus(data.error || 'Error de autenticación', 'error');
+        }
+      } catch (err) {
+        showStatus('Error de red al conectar con el servidor', 'error');
+      }
+    }
+
+    async function loginDemoUser() {
+      showStatus('Creando sesión Demo...', 'success');
+      try {
+        const res = await fetch('/api/auth/demo', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('userToken', data.token);
+          localStorage.setItem('overlayKey', data.user.overlayKey);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          
+          showStatus('¡Modo Demo activado! Redirigiendo...', 'success');
+          setTimeout(() => {
+            window.location.href = '/index.html';
+          }, 800);
+        }
+      } catch (err) {
+        showStatus('Error al iniciar modo demo', 'error');
+      }
+    }
+
+    function showStatus(msg, type) {
+      const box = document.getElementById('status-box');
+      box.innerText = msg;
+      box.className = `status-msg ${type}`;
+      box.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

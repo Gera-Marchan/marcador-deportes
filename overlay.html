@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scorebug Overlay - NiñoPrieto! Multi-Deportes OBS</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: transparent;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #FFFFFF;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 40px;
+      position: relative;
+    }
+
+    /* BANNER DE ANIMACIÓN ESTILO MLB STANDARD */
+    .action-banner-container {
+      position: absolute;
+      bottom: 135px;
+      left: 40px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(20px) scale(0.85);
+      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .action-banner-container.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .action-banner-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 28px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+      border: 2px solid #F87171;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.6);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .action-banner-badge.out {
+      background: linear-gradient(135deg, #EF4444, #991B1B);
+      border-color: #F87171;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
+    }
+    .action-banner-badge.ponche {
+      background: linear-gradient(135deg, #EAB308, #854D0E);
+      border-color: #FACC15;
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.8);
+    }
+    .action-banner-badge.hit {
+      background: linear-gradient(135deg, #0284C7, #075985);
+      border-color: #38BDF8;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+    }
+    .action-banner-badge.inning-change {
+      background: linear-gradient(135deg, #10B981, #047857);
+      border-color: #34D399;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+    }
+
+    /* ANIMACIÓN GIGANTE CENTRADA DE HOME RUN */
+    .homerun-overlay-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.4);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+    }
+    .homerun-overlay-container.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .homerun-card {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(245, 158, 11, 0.98), rgba(236, 72, 153, 0.98));
+      border: 6px solid #FDE047;
+      border-radius: 32px;
+      padding: 40px 80px;
+      box-shadow: 0 0 90px rgba(245, 158, 11, 0.95), 0 0 130px rgba(239, 68, 68, 0.9), 0 25px 60px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      animation: pulseHomerun 0.8s infinite alternate ease-in-out;
+    }
+    .homerun-title {
+      font-size: 5.5rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      text-shadow: 0 6px 20px rgba(0,0,0,0.9), 0 0 40px #FEF08A, 0 0 80px #F59E0B;
+      text-align: center;
+    }
+    .homerun-subtitle {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #FEF08A;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.9);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @keyframes pulseHomerun {
+      0% { transform: scale(1); box-shadow: 0 0 60px rgba(236, 72, 153, 0.8); }
+      100% { transform: scale(1.06); box-shadow: 0 0 110px rgba(245, 158, 11, 1); }
+    }
+
+    /* ANIMACIÓN GIGANTE DE GRAND SLAM */
+    .grandslam-overlay-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.3) rotate(-5deg);
+      transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+    }
+    .grandslam-overlay-container.show {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    .grandslam-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.98), rgba(220, 38, 38, 0.98), rgba(124, 58, 237, 0.98));
+      border: 8px solid #FDE047;
+      border-radius: 36px;
+      padding: 45px 90px;
+      box-shadow: 0 0 120px rgba(253, 224, 71, 1), 0 0 160px rgba(239, 68, 68, 0.95), 0 30px 70px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      animation: pulseGrandSlam 0.6s infinite alternate ease-in-out;
+    }
+    .grandslam-title {
+      font-size: 6.2rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      text-shadow: 0 8px 25px rgba(0,0,0,0.95), 0 0 50px #FDE047, 0 0 90px #F59E0B;
+      text-align: center;
+    }
+    .grandslam-subtitle {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #FEF08A;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.95);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @keyframes pulseGrandSlam {
+      0% { transform: scale(1); box-shadow: 0 0 80px rgba(253, 224, 71, 0.9); }
+      100% { transform: scale(1.08); box-shadow: 0 0 150px rgba(239, 68, 68, 1); }
+    }
+
+    /* ANIMACIÓN GIGANTE CENTRADA DE GOOOOOL */
+    .goal-overlay-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.3) rotate(4deg);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+    }
+    .goal-overlay-container.show {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    .goal-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98), rgba(2, 132, 199, 0.98));
+      border: 8px solid #34D399;
+      border-radius: 36px;
+      padding: 45px 90px;
+      box-shadow: 0 0 120px rgba(52, 211, 153, 1), 0 0 160px rgba(16, 185, 129, 0.9), 0 30px 70px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      animation: pulseGoal 0.6s infinite alternate ease-in-out;
+    }
+    .goal-title {
+      font-size: 6.5rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      text-shadow: 0 8px 25px rgba(0,0,0,0.95), 0 0 50px #34D399, 0 0 90px #10B981;
+      text-align: center;
+    }
+    .goal-subtitle {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #A7F3D0;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.95);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @keyframes pulseGoal {
+      0% { transform: scale(1); box-shadow: 0 0 80px rgba(52, 211, 153, 0.9); }
+      100% { transform: scale(1.08); box-shadow: 0 0 150px rgba(16, 185, 129, 1); }
+    }
+
+    .scorebug-wrapper {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      height: 76px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* TEMAS VISUALES INTERCAMBIABLES */
+    .scorebug-wrapper.theme-champions {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 27, 75, 0.98)) !important;
+      border: 2.5px solid #F59E0B !important;
+      border-radius: 16px !important;
+      box-shadow: 0 0 45px rgba(245, 158, 11, 0.6), 0 25px 50px rgba(0, 0, 0, 0.85) !important;
+    }
+    .scorebug-wrapper.theme-champions .team-box {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(15, 23, 42, 0.9)) !important;
+    }
+    .scorebug-wrapper.theme-champions .situation-box {
+      background: rgba(15, 23, 42, 0.95) !important;
+    }
+    .scorebug-wrapper.theme-champions .team-score {
+      color: #F59E0B !important;
+    }
+
+    .scorebug-wrapper.theme-red-flame {
+      background: linear-gradient(135deg, rgba(24, 24, 27, 0.98), rgba(127, 29, 29, 0.98)) !important;
+      border: 2.5px solid #EF4444 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 0 45px rgba(239, 68, 68, 0.65), 0 25px 50px rgba(0, 0, 0, 0.85) !important;
+    }
+    .scorebug-wrapper.theme-red-flame .team-box {
+      background: linear-gradient(135deg, rgba(69, 10, 10, 0.9), rgba(24, 24, 27, 0.9)) !important;
+    }
+    .scorebug-wrapper.theme-red-flame .situation-box {
+      background: rgba(24, 24, 27, 0.95) !important;
+    }
+    .scorebug-wrapper.theme-red-flame .team-score {
+      color: #F87171 !important;
+    }
+
+    .scorebug-wrapper.theme-minimal {
+      background: rgba(0, 0, 0, 0.55) !important;
+      backdrop-filter: blur(14px) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 24px !important;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6) !important;
+    }
+    .scorebug-wrapper.theme-minimal .team-box {
+      background: transparent !important;
+    }
+    .scorebug-wrapper.theme-minimal .situation-box {
+      background: transparent !important;
+    }
+
+    .team-box {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 18px;
+      min-width: 180px;
+      position: relative;
+    }
+
+    .team-box.visit {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 6px solid #38BDF8;
+      transition: border-color 0.3s ease;
+    }
+
+    .team-box.home {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border-right: 2px solid rgba(59, 130, 246, 0.6);
+      border-left: 6px solid #EF4444;
+      transition: border-color 0.3s ease;
+    }
+
+    .team-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #F8FAFC;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 12px;
+    }
+
+    .team-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #38BDF8;
+      min-width: 44px;
+      text-align: right;
+      line-height: 1;
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .team-score.flash {
+      color: #22C55E;
+      transform: scale(1.3);
+    }
+
+    .team-stats-mini {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94A3B8;
+      margin-left: 12px;
+      gap: 2px;
+    }
+
+    .situation-box {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      height: 100%;
+      background: rgba(10, 15, 30, 0.96);
+      gap: 18px;
+    }
+
+    .inning-display {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+
+    .inning-arrow {
+      font-size: 1rem;
+      color: #38BDF8;
+    }
+
+    .diamond-mini {
+      width: 42px;
+      height: 42px;
+      position: relative;
+    }
+
+    .diamond-mini svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .base-mini {
+      fill: rgba(255, 255, 255, 0.15);
+      stroke: rgba(255, 255, 255, 0.4);
+      stroke-width: 1.5;
+      transition: fill 0.2s ease, stroke 0.2s ease;
+    }
+
+    .base-mini.active {
+      fill: #F59E0B;
+      stroke: #FCD34D;
+      filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.8));
+    }
+
+    .count-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .count-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .count-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #64748B;
+      width: 12px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .dot.ball.active {
+      background-color: #22C55E;
+      border-color: #4ADE80;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+    }
+
+    .dot.strike.active {
+      background-color: #EAB308;
+      border-color: #FACC15;
+      box-shadow: 0 0 8px rgba(234, 179, 8, 0.9);
+    }
+
+    .dot.out.active {
+      background-color: #EF4444;
+      border-color: #F87171;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.9);
+    }
+
+    /* BANNER DE PATROCINADORES (SOLO LOGO IMAGEN - ABAJO A LA DERECHA 1920x1080) */
+    .sponsor-banner-container {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(15px) scale(0.95);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .sponsor-banner-container.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .sponsor-logo-img {
+      height: 200px;
+      max-height: 220px;
+      max-width: 500px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.85));
+    }
+
+    /* CINTILLO DE NOTICIAS Y AVISOS (TICKER TAPE) */
+    .ticker-bar-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: 38px;
+      z-index: 800;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
+      border-top: 2.5px solid #38BDF8;
+      box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      transform: translateY(100%);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .ticker-bar-container.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .ticker-badge {
+      background: #38BDF8;
+      color: #0F172A;
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      z-index: 10;
+      box-shadow: 4px 0 14px rgba(0,0,0,0.6);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .ticker-track {
+      display: flex;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .ticker-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: tickerMarquee 30s linear infinite;
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #F8FAFC;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    @keyframes tickerMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+  
+    /* ==========================================================================
+       PANTALLAS FULLSCREEN Y CAPAS MASTER (MASTER HTML BROADCAST SCENES)
+       ========================================================================== */
+    .master-screen-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .master-screen-layer.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .master-screen-bg {
+      width: 100%;
+      height: 100%;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .master-screen-bg.dark-overlay {
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.99) 100%);
+    }
+    .master-screen-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 2;
+    }
+    .master-screen-content.center {
+      align-items: center;
+      justify-content: center;
+    }
+    .master-live-badge {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      background: rgba(239, 68, 68, 0.95);
+      color: #FFF;
+      font-weight: 900;
+      font-size: 1.2rem;
+      padding: 10px 24px;
+      border-radius: 12px;
+      border: 2px solid #F87171;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+      letter-spacing: 0.08em;
+    }
+
+    /* MATCH WELCOME CARD */
+    .match-welcome-card {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 3px solid #38BDF8;
+      border-radius: 28px;
+      padding: 35px 60px;
+      box-shadow: 0 0 60px rgba(56, 189, 248, 0.5), 0 25px 50px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    .match-welcome-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #38BDF8;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .match-welcome-teams {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .welcome-team-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .welcome-team-box img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
+    }
+    .welcome-team-name {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .welcome-vs-badge {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #F59E0B;
+      background: rgba(245, 158, 11, 0.15);
+      border: 2px solid #F59E0B;
+      padding: 10px 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    }
+
+    /* HALFTIME SCORE CARD */
+    .halftime-card {
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 3px solid #F59E0B;
+      border-radius: 28px;
+      padding: 35px 60px;
+      box-shadow: 0 0 60px rgba(245, 158, 11, 0.5), 0 25px 50px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .halftime-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #F59E0B;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .halftime-scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+    .ht-team {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .ht-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3.5rem;
+      color: #38BDF8;
+      background: rgba(30, 41, 59, 0.9);
+      padding: 8px 24px;
+      border-radius: 16px;
+      border: 2px solid rgba(56, 189, 248, 0.5);
+    }
+    .ht-divider {
+      color: #94A3B8;
+    }
+
+    /* SPONSORS FULLSHOWCASE */
+    .sponsors-full-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      max-width: 1200px;
+      width: 90%;
+    }
+    .sponsors-full-header {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #F59E0B;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+    }
+    .sponsors-showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      width: 100%;
+    }
+    .sponsor-card-item {
+      background: rgba(30, 41, 59, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .sponsor-card-item img {
+      height: 90px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .sponsor-card-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #FFF;
+    }
+    .sponsor-card-slogan {
+      font-size: 0.85rem;
+      color: #94A3B8;
+    }
+
+    /* CAMERA FRAME OVERLAY */
+    .camera-frame-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 400;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      box-sizing: border-box;
+      padding: 16px;
+    }
+    .camera-frame-layer.active {
+      opacity: 1;
+    }
+    .camera-border-inner {
+      width: 100%;
+      height: 100%;
+      border: 6px solid #38BDF8;
+      border-radius: 16px;
+      box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.5), 0 0 20px rgba(56, 189, 248, 0.5);
+    }
+
+  
+    /* ESTILO FENWAY PARK (MARCADOR CLÁSICO BÉISBOL) */
+    .fenway-board-container {
+      width: 1380px;
+      background: #0e4231;
+      border: 8px solid #FFFFFF;
+      border-radius: 16px;
+      padding: 24px 35px;
+      box-shadow: 0 0 90px rgba(0, 0, 0, 0.95), 0 25px 60px rgba(0, 0, 0, 0.9);
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .fenway-header {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-align: center;
+      color: #FFFFFF;
+      text-transform: uppercase;
+      border-bottom: 3.5px solid #FFFFFF;
+      padding-bottom: 8px;
+    }
+    .fenway-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .fenway-table th {
+      font-size: 1.35rem;
+      font-weight: 900;
+      padding: 8px 6px;
+      text-align: center;
+      border-bottom: 3px solid #FFFFFF;
+    }
+    .fenway-table th.col-team {
+      text-align: left;
+      width: 320px;
+      font-family: 'Inter', sans-serif;
+    }
+    .fenway-table th.col-sep {
+      border-left: 3.5px solid #FFFFFF;
+      width: 10px;
+      padding: 0;
+    }
+    .fenway-table td {
+      font-size: 1.8rem;
+      font-weight: 900;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    .fenway-table td.col-team-name {
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fenway-num-box {
+      background: #061f17;
+      border: 2px solid #000000;
+      color: #FFFFFF;
+      display: inline-block;
+      min-width: 46px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.85);
+    }
+    .fenway-num-box.active-inning {
+      border-color: #FCD34D;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(0,0,0,0.85);
+    }
+    .fenway-num-box.total-r { color: #4ADE80; border-color: #22C55E; font-size: 2.1rem; }
+    .fenway-num-box.total-h { color: #38BDF8; border-color: #0284C7; font-size: 2.1rem; }
+    .fenway-num-box.total-e { color: #F87171; border-color: #EF4444; font-size: 2.1rem; }
+
+    .fenway-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 3.5px solid #FFFFFF;
+      padding-top: 14px;
+      margin-top: 4px;
+    }
+    .fenway-footer-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+    .fenway-dot-group {
+      display: flex;
+      gap: 8px;
+    }
+    .fenway-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #061f17;
+      border: 2px solid #000000;
+    }
+    .fenway-dot.green.active { background: #22C55E; box-shadow: 0 0 12px #22C55E; }
+    .fenway-dot.yellow.active { background: #EAB308; box-shadow: 0 0 12px #EAB308; }
+    .fenway-dot.red.active { background: #EF4444; box-shadow: 0 0 12px #EF4444; }
+
+    /* ESTILO FÚTBOL STADIUM RECAP BOARD */
+    .soccer-halftime-card {
+      width: 1100px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 3px solid #38BDF8;
+      border-radius: 28px;
+      padding: 35px 50px;
+      box-shadow: 0 0 80px rgba(56, 189, 248, 0.5), 0 30px 70px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    .soccer-ht-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+      padding-bottom: 12px;
+    }
+    .soccer-ht-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #38BDF8;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .soccer-ht-badge {
+      background: #0284C7;
+      color: #FFF;
+      font-weight: 900;
+      font-size: 0.9rem;
+      padding: 4px 16px;
+      border-radius: 8px;
+      letter-spacing: 0.05em;
+    }
+    .soccer-ht-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+    .soccer-ht-team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 280px;
+    }
+    .soccer-ht-team img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.8));
+    }
+    .soccer-ht-team-name {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #FFF;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .soccer-ht-score-center {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .soccer-ht-score-val {
+      font-size: 5rem;
+      font-weight: 900;
+      color: #FFFFFF;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 10px 32px;
+      border-radius: 20px;
+      border: 3px solid #38BDF8;
+      box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+    .soccer-ht-dash {
+      font-size: 3.5rem;
+      color: #94A3B8;
+      font-weight: 900;
+    }
+    .soccer-ht-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 24px;
+    }
+    .soccer-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+    .soccer-stat-badge {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 12px;
+      border-radius: 8px;
+      min-width: 40px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- CINTILLO DE NOTICIAS Y AVISOS (TICKER TAPE) -->
+  <div id="tickerBar" class="ticker-bar-container">
+    <div class="ticker-badge">
+      <span>📢 EN VIVO</span>
+    </div>
+    <div class="ticker-track">
+      <div id="tickerText" class="ticker-content">
+        ¡BIENVENIDOS A LA TRANSMISIÓN EN VIVO! | SUSCRÍBETE A NUESTRO CANAL Y SÍGUENOS EN REDES SOCIALES | COMENTA TU EQUIPO FAVORITO
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER DE ANIMACIÓN MLB STANDARD -->
+  <div id="actionBanner" class="action-banner-container">
+    <div id="actionBannerBadge" class="action-banner-badge out">
+      <span id="actionBannerText">OUT!</span>
+    </div>
+  </div>
+
+  <!-- ANIMACIÓN GIGANTE CENTRADA DE HOME RUN -->
+  <div id="homerunOverlay" class="homerun-overlay-container">
+    <div class="homerun-card">
+      <div class="homerun-title">⚾🔥 HomeRun! 🔥⚾</div>
+      <div class="homerun-subtitle" id="homerunTeamText">¡BATAZO DE CUATRO ESQUINAS!</div>
+    </div>
+  </div>
+
+  <!-- ANIMACIÓN GIGANTE CENTRADA DE GRAND SLAM -->
+  <div id="grandslamOverlay" class="grandslam-overlay-container">
+    <div class="grandslam-card">
+      <div class="grandslam-title">💥 GRAND SLAM! 💥</div>
+      <div class="grandslam-subtitle" id="grandslamTeamText">¡BATAZO CON BASES LLENAS!</div>
+    </div>
+  </div>
+
+  <!-- ANIMACIÓN GIGANTE CENTRADA DE GOOOOOL -->
+  <div id="goalOverlay" class="goal-overlay-container">
+    <div class="goal-card">
+      <div class="goal-title">⚽🔥 GOOOOOL! 🔥⚽</div>
+      <div class="goal-subtitle" id="goalTeamText">¡ANOTACIÓN DE FÚTBOL!</div>
+    </div>
+  </div>
+
+  <div class="scorebug-wrapper" id="scorebug">
+    <div class="team-box visit">
+      <img id="visitLogoImg" class="team-logo-img" src="" alt="Logo Visita" style="display:none; height:46px; width:46px; object-fit:contain; margin-right:10px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.85));">
+      <div class="team-name" id="visitName">VISITANTE</div>
+      <div class="team-score" id="visitScore">0</div>
+      <div class="team-stats-mini">
+        <span class="baseball-stat">H: <strong id="visitHits" style="color:#FFF;">0</strong></span>
+        <span class="baseball-stat">E: <strong id="visitErrors" style="color:#FFF;">0</strong></span>
+      </div>
+    </div>
+
+    <div class="team-box home">
+      <img id="homeLogoImg" class="team-logo-img" src="" alt="Logo Local" style="display:none; height:46px; width:46px; object-fit:contain; margin-right:10px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.85));">
+      <div class="team-name" id="homeName">LOCAL</div>
+      <div class="team-score" id="homeScore">0</div>
+      <div class="team-stats-mini">
+        <span class="baseball-stat">H: <strong id="homeHits" style="color:#FFF;">0</strong></span>
+        <span class="baseball-stat">E: <strong id="homeErrors" style="color:#FFF;">0</strong></span>
+      </div>
+    </div>
+
+    <!-- SECCIÓN BÉISBOL -->
+    <div id="baseballSituationBox" class="situation-box">
+      <div class="inning-display">
+        <span class="inning-arrow" id="inningArrow">▲</span>
+        <span id="inningNum">1</span>
+      </div>
+
+      <div class="diamond-mini">
+        <svg viewBox="0 0 100 100">
+          <polygon id="base2" class="base-mini" points="50,12 66,28 50,44 34,28" />
+          <polygon id="base3" class="base-mini" points="26,36 42,52 26,68 10,52" />
+          <polygon id="base1" class="base-mini" points="74,36 90,52 74,68 58,52" />
+        </svg>
+      </div>
+
+      <div class="count-container">
+        <div class="count-row">
+          <span class="count-label">B</span>
+          <div class="dot ball" id="b1"></div>
+          <div class="dot ball" id="b2"></div>
+          <div class="dot ball" id="b3"></div>
+          <div class="dot ball" id="b4"></div>
+        </div>
+        <div class="count-row">
+          <span class="count-label">S</span>
+          <div class="dot strike" id="s1"></div>
+          <div class="dot strike" id="s2"></div>
+          <div class="dot strike" id="s3"></div>
+        </div>
+        <div class="count-row">
+          <span class="count-label">O</span>
+          <div class="dot out" id="o1"></div>
+          <div class="dot out" id="o2"></div>
+          <div class="dot out" id="o3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN FÚTBOL -->
+    <div id="soccerSituationBox" class="situation-box" style="display:none; gap:12px; padding:0 24px; border-left:1px solid rgba(255,255,255,0.1);">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <span id="overlaySoccerClock" style="font-family:'JetBrains Mono', monospace; font-size:1.65rem; font-weight:900; color:#38BDF8; text-shadow:0 0 10px rgba(56,189,248,0.5);">00:00</span>
+        <span id="overlaySoccerPeriod" style="font-size:0.75rem; font-weight:800; background:#0284C7; color:#FFF; padding:1px 8px; border-radius:4px; text-transform:uppercase;">1T</span>
+      </div>
+      <span id="overlaySoccerAdded" style="font-size:1.25rem; font-weight:900; color:#F59E0B; text-shadow:0 0 8px rgba(245,158,11,0.6);"></span>
+    </div>
+
+  </div>
+
+  <!-- BANNER DE PATROCINADORES (SOLO LOGO IMAGEN - ABAJO A LA DERECHA) -->
+  <div id="sponsorBanner" class="sponsor-banner-container">
+    <img id="sponsorLogo" src="" alt="Logo" class="sponsor-logo-img">
+  </div>
+
+  <script>
+    const channel = new BroadcastChannel('baseball_scoreboard_channel');
+    let prevState = null;
+    let bannerTimeout = null;
+    let homerunTimeout = null;
+    let grandslamTimeout = null;
+    let goalTimeout = null;
+    let lastHandledAction = null;
+
+    function triggerHomerunOverlay(teamName) {
+      const el = document.getElementById('homerunOverlay');
+      const textEl = document.getElementById('homerunTeamText');
+      if (!el) return;
+      if (textEl) textEl.textContent = `¡BATAZO DE CUATRO ESQUINAS DE ${teamName ? teamName.toUpperCase() : 'BATEADOR'}!`;
+      
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+
+      if (homerunTimeout) clearTimeout(homerunTimeout);
+      homerunTimeout = setTimeout(() => {
+        el.classList.remove('show');
+      }, 5000);
+    }
+
+    function triggerGrandSlamOverlay(teamName) {
+      const el = document.getElementById('grandslamOverlay');
+      const textEl = document.getElementById('grandslamTeamText');
+      if (!el) return;
+      if (textEl) textEl.textContent = `¡BATAZO CON BASES LLENAS DE ${teamName ? teamName.toUpperCase() : 'BATEADOR'}!`;
+      
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+
+      if (grandslamTimeout) clearTimeout(grandslamTimeout);
+      grandslamTimeout = setTimeout(() => {
+        el.classList.remove('show');
+      }, 6000);
+    }
+
+    function triggerGoalOverlay(teamName) {
+      const el = document.getElementById('goalOverlay');
+      const textEl = document.getElementById('goalTeamText');
+      if (!el) return;
+      if (textEl) textEl.textContent = `¡ANOTACIÓN ESPECTACULAR DE ${teamName ? teamName.toUpperCase() : 'EQUIPO'}!`;
+      
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+
+      if (goalTimeout) clearTimeout(goalTimeout);
+      goalTimeout = setTimeout(() => {
+        el.classList.remove('show');
+      }, 6000);
+    }
+
+    function triggerActionBanner(text, type) {
+      const container = document.getElementById('actionBanner');
+      const badge = document.getElementById('actionBannerBadge');
+      const textEl = document.getElementById('actionBannerText');
+      if (!container || !badge || !textEl) return;
+
+      textEl.textContent = text;
+      badge.className = 'action-banner-badge ' + (type || 'out');
+
+      container.classList.add('show');
+      if (bannerTimeout) clearTimeout(bannerTimeout);
+      bannerTimeout = setTimeout(() => {
+        container.classList.remove('show');
+      }, 2300);
+    }
+
+    const overlayLoadTime = Date.now() - 2000;
+
+    function handleActionTrigger(data) {
+      if (!data || !data.lastAction) return;
+
+      const actionTag = data.lastAction;
+      if (actionTag === lastHandledAction) return;
+
+      const parts = actionTag.split('_');
+      const tagTimestamp = parseInt(parts[parts.length - 1], 10);
+
+      // Ignorar acciones previas al momento en que se abrió o cargó el overlay
+      if (!isNaN(tagTimestamp) && tagTimestamp < overlayLoadTime) {
+        lastHandledAction = actionTag;
+        return;
+      }
+
+      lastHandledAction = actionTag;
+
+      const isTop = data.inningHalf === 'alta' || data.inningHalf === 'top';
+      const currentBattingTeam = isTop ? (data.visitaName || 'VISITANTE') : (data.localName || 'LOCAL');
+
+      if (actionTag.startsWith('GOL')) {
+        let scoringTeamName = currentBattingTeam;
+        if (actionTag.includes('VISITA')) scoringTeamName = data.visitaName || 'VISITANTE';
+        else if (actionTag.includes('LOCAL')) scoringTeamName = data.localName || 'LOCAL';
+        triggerGoalOverlay(scoringTeamName);
+      } else if (actionTag.startsWith('GRANDSLAM')) {
+        triggerGrandSlamOverlay(currentBattingTeam);
+      } else if (actionTag.startsWith('HOMERUN')) {
+        triggerHomerunOverlay(currentBattingTeam);
+      } else if (actionTag.startsWith('HIT')) {
+        triggerActionBanner('¡HIT! ⚾', 'hit');
+      } else if (actionTag.startsWith('PONCHE')) {
+        triggerActionBanner('¡STRIKEOUT! ꓘ', 'ponche');
+      } else if (actionTag.startsWith('ROJA')) {
+        triggerActionBanner('¡TARJETA ROJA / EXPULSIÓN! 🟥', 'out');
+      } else if (actionTag.startsWith('AMARILLA')) {
+        triggerActionBanner('TARJETA AMARILLA 🟨', 'ponche');
+      } else if (actionTag.startsWith('VAR')) {
+        triggerActionBanner('¡REVISIÓN VAR! 📺', 'ponche');
+      } else if (actionTag.startsWith('PENALTY')) {
+        triggerActionBanner('¡PENALTY! ⚽', 'hit');
+      } else if (actionTag.startsWith('CARRERA')) {
+        triggerActionBanner('¡CARRERA! 🏃‍♂️💨', 'hit');
+      }
+    }
+
+    function detectActionChange(newState) {
+      if (!prevState) {
+        prevState = JSON.parse(JSON.stringify(newState));
+        return;
+      }
+
+      const pOuts = prevState.outs || 0;
+      const nOuts = newState.outs || 0;
+      const pStrikes = prevState.strikes || 0;
+
+      const isTop = newState.inningHalf === 'alta' || newState.inningHalf === 'top';
+      const currentBattingTeam = isTop ? (newState.visitaName || 'VISITANTE') : (newState.localName || 'LOCAL');
+
+      // 1. Detectar 3 outs / Cambio de inning
+      if (nOuts === 0 && pOuts === 2 && (newState.inningNumber !== prevState.inningNumber || newState.inningHalf !== prevState.inningHalf)) {
+        triggerActionBanner('¡3 OUTS - CAMBIO DE INNING!', 'inning-change');
+      }
+      // 2. Detectar Out o Ponche
+      else if (nOuts > pOuts) {
+        if (pStrikes >= 2) {
+          triggerActionBanner('¡STRIKEOUT! ꓘ', 'ponche');
+        } else {
+          triggerActionBanner('¡OUT!', 'out');
+        }
+      }
+
+      prevState = JSON.parse(JSON.stringify(newState));
+    }
+
+    let lastSponsorLogo = null;
+    let sponsorFadeTimeout = null;
+
+    function updateSponsorLogoSmoothly(newLogoUrl) {
+      const spBanner = document.getElementById('sponsorBanner');
+      const logoEl = document.getElementById('sponsorLogo');
+      if (!spBanner || !logoEl) return;
+
+      if (!newLogoUrl) {
+        spBanner.classList.remove('show');
+        lastSponsorLogo = null;
+        return;
+      }
+
+      if (lastSponsorLogo === newLogoUrl) {
+        if (!spBanner.classList.contains('show')) spBanner.classList.add('show');
+        if (logoEl.src !== newLogoUrl) logoEl.src = newLogoUrl;
+        return;
+      }
+
+      if (spBanner.classList.contains('show') && lastSponsorLogo !== null) {
+        logoEl.style.transition = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease-out';
+        logoEl.style.opacity = '0';
+        logoEl.style.transform = 'scale(0.9)';
+
+        if (sponsorFadeTimeout) clearTimeout(sponsorFadeTimeout);
+        sponsorFadeTimeout = setTimeout(() => {
+          logoEl.src = newLogoUrl;
+          lastSponsorLogo = newLogoUrl;
+          logoEl.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s ease-in';
+          logoEl.style.opacity = '1';
+          logoEl.style.transform = 'scale(1)';
+        }, 220);
+      } else {
+        logoEl.src = newLogoUrl;
+        lastSponsorLogo = newLogoUrl;
+        logoEl.style.opacity = '1';
+        logoEl.style.transform = 'scale(1)';
+        spBanner.classList.add('show');
+      }
+    }
+
+    function updateScorebug(data) {
+      if (!data || typeof data !== 'object' || Object.keys(data).length === 0) return;
+
+      try {
+        handleActionTrigger(data);
+      } catch (e) {}
+
+      const activeSport = data.activeSport || 'baseball';
+      const isSoccer = activeSport === 'soccer';
+
+      // 1. MANEJO DE ESCENAS MASTER HTML
+      const screenMode = data.screenMode || 'marcador';
+      
+      const screens = {
+        'espera': 'screenEspera',
+        'bienvenida': 'screenBienvenida',
+        'medio_tiempo': 'screenMedioTiempo',
+        'problemas': 'screenProblemas',
+        'patrocinadores_full': 'screenPatrocinadoresFull'
+      };
+
+      Object.keys(screens).forEach(m => {
+        const el = document.getElementById(screens[m]);
+        if (el) el.classList.toggle('active', screenMode === m);
+      });
+
+      // Transición de Scorebug según modo
+      const scorebugWrapper = document.getElementById('scorebug');
+      if (scorebugWrapper) {
+        if (screenMode === 'marcador') {
+          scorebugWrapper.style.opacity = '1';
+          scorebugWrapper.style.transform = 'translateY(0)';
+          scorebugWrapper.style.pointerEvents = 'auto';
+        } else {
+          scorebugWrapper.style.opacity = '0';
+          scorebugWrapper.style.transform = 'translateY(20px)';
+          scorebugWrapper.style.pointerEvents = 'none';
+        }
+      }
+
+      // 2. ACTUALIZACIÓN PANTALLA MEDIO TIEMPO (FENWAY PARK BÉISBOL vs FÚTBOL STADIUM)
+      const fenwayBoard = document.getElementById('fenwayBaseballBoard');
+      const soccerBoard = document.getElementById('soccerHalftimeBoard');
+
+      if (fenwayBoard) fenwayBoard.style.display = !isSoccer ? 'flex' : 'none';
+      if (soccerBoard) soccerBoard.style.display = isSoccer ? 'flex' : 'none';
+
+      if (!isSoccer) {
+        // --- BÉISBOL FENWAY PARK BOARD ---
+        const fvName = document.getElementById('fenwayVisitaName');
+        if (fvName) fvName.textContent = data.visitaName || 'VISITA';
+        const flName = document.getElementById('fenwayLocalName');
+        if (flName) flName.textContent = data.localName || 'LOCAL';
+
+        const fvR = document.getElementById('fenwayVisitaR');
+        if (fvR) fvR.textContent = data.visitaScore ?? 0;
+        const fvH = document.getElementById('fenwayVisitaH');
+        if (fvH) fvH.textContent = data.visitaHits ?? 0;
+        const fvE = document.getElementById('fenwayVisitaE');
+        if (fvE) fvE.textContent = data.visitaErrors ?? 0;
+
+        const flR = document.getElementById('fenwayLocalR');
+        if (flR) flR.textContent = data.localScore ?? 0;
+        const flH = document.getElementById('fenwayLocalH');
+        if (flH) flH.textContent = data.localHits ?? 0;
+        const flE = document.getElementById('fenwayLocalE');
+        if (flE) flE.textContent = data.localErrors ?? 0;
+
+        const vScores = data.visitaInningScores || [0,0,0,0,0,0,0,0,0];
+        const lScores = data.localInningScores || [0,0,0,0,0,0,0,0,0];
+        const currentInning = data.inningNumber || 1;
+        const isBottom = data.inningHalf === 'baja' || data.inningHalf === 'bot';
+
+        for (let i = 1; i <= 9; i++) {
+          const vTd = document.getElementById(`fV${i}`);
+          const lTd = document.getElementById(`fL${i}`);
+          const isCurrent = i === currentInning;
+          
+          if (vTd) {
+            const showVal = i <= currentInning;
+            vTd.innerHTML = `<span class="fenway-num-box ${isCurrent ? 'active-inning' : ''}">${showVal ? (vScores[i-1] ?? 0) : ''}</span>`;
+          }
+          if (lTd) {
+            const showLocal = i < currentInning || (i === currentInning && isBottom);
+            lTd.innerHTML = `<span class="fenway-num-box ${isCurrent ? 'active-inning' : ''}">${showLocal ? (lScores[i-1] ?? 0) : ''}</span>`;
+          }
+        }
+
+        const isTop = data.inningHalf === 'alta' || data.inningHalf === 'top';
+        const atBatName = isTop ? (data.visitaName || 'VISITA') : (data.localName || 'LOCAL');
+        const abEl = document.getElementById('fenwayAtBatName');
+        if (abEl) abEl.textContent = atBatName;
+
+        for (let i = 1; i <= 4; i++) {
+          const dot = document.getElementById(`fDotB${i}`);
+          if (dot) dot.classList.toggle('active', (data.balls || 0) >= i);
+        }
+        for (let i = 1; i <= 3; i++) {
+          const dot = document.getElementById(`fDotS${i}`);
+          if (dot) dot.classList.toggle('active', (data.strikes || 0) >= i);
+        }
+        for (let i = 1; i <= 3; i++) {
+          const dot = document.getElementById(`fDotO${i}`);
+          if (dot) dot.classList.toggle('active', (data.outs || 0) >= i);
+        }
+      } else {
+        // --- FÚTBOL STADIUM HALFTIME CARD ---
+        const sVName = document.getElementById('soccerHtVisitaName');
+        if (sVName) sVName.textContent = data.visitaName || 'VISITA';
+        const sLName = document.getElementById('soccerHtLocalName');
+        if (sLName) sLName.textContent = data.localName || 'LOCAL';
+
+        const sVScore = document.getElementById('soccerHtVisitaScore');
+        if (sVScore) sVScore.textContent = data.visitaScore ?? 0;
+        const sLScore = document.getElementById('soccerHtLocalScore');
+        if (sLScore) sLScore.textContent = data.localScore ?? 0;
+
+        const sVLogo = document.getElementById('soccerHtVisitaLogo');
+        if (sVLogo) {
+          if (data.visitaLogo) { sVLogo.src = data.visitaLogo; sVLogo.style.display = 'block'; }
+          else sVLogo.style.display = 'none';
+        }
+        const sLLogo = document.getElementById('soccerHtLocalLogo');
+        if (sLLogo) {
+          if (data.localLogo) { sLLogo.src = data.localLogo; sLLogo.style.display = 'block'; }
+          else sLLogo.style.display = 'none';
+        }
+
+        const periodBadge = document.getElementById('soccerHtPeriodBadge');
+        if (periodBadge && data.soccerState) {
+          periodBadge.textContent = `DESCANSO (${data.soccerState.period || '1T'} FINALIZADO)`;
+        }
+
+        const vYellow = document.getElementById('soccerHtVisitaYellow');
+        if (vYellow && data.soccerState) vYellow.textContent = data.soccerState.visitaYellow || 0;
+        const lYellow = document.getElementById('soccerHtLocalYellow');
+        if (lYellow && data.soccerState) lYellow.textContent = data.soccerState.localYellow || 0;
+
+        const vRed = document.getElementById('soccerHtVisitaRed');
+        if (vRed && data.soccerState) vRed.textContent = data.soccerState.visitaRed || 0;
+        const lRed = document.getElementById('soccerHtLocalRed');
+        if (lRed && data.soccerState) lRed.textContent = data.soccerState.localRed || 0;
+      }
+
+      // 3. DATOS PANTALLA BIENVENIDA
+      const wVisName = document.getElementById('welcomeVisitaName');
+      if (wVisName) wVisName.textContent = data.visitaName || 'VISITA';
+      const wLocName = document.getElementById('welcomeLocalName');
+      if (wLocName) wLocName.textContent = data.localName || 'LOCAL';
+
+      const wVisLogo = document.getElementById('welcomeVisitaLogo');
+      if (wVisLogo) {
+        if (data.visitaLogo) { wVisLogo.src = data.visitaLogo; wVisLogo.style.display = 'block'; }
+        else { wVisLogo.style.display = 'none'; }
+      }
+      const wLocLogo = document.getElementById('welcomeLocalLogo');
+      if (wLocLogo) {
+        if (data.localLogo) { wLocLogo.src = data.localLogo; wLocLogo.style.display = 'block'; }
+        else { wLocLogo.style.display = 'none'; }
+      }
+
+      // 4. MARCO DE CÁMARA
+      const cameraFrame = document.getElementById('cameraFrameOverlay');
+      if (cameraFrame) {
+        cameraFrame.classList.toggle('active', !!data.showCameraFrame);
+      }
+
+      // 5. PATROCINADORES FULLSCREEN
+      if (screenMode === 'patrocinadores_full') {
+        const showcase = document.getElementById('sponsorsFullShowcase');
+        if (showcase && data.sponsorsState && data.sponsorsState.list) {
+          showcase.innerHTML = '';
+          data.sponsorsState.list.forEach(sp => {
+            const card = document.createElement('div');
+            card.className = 'sponsor-card-item';
+            card.innerHTML = `
+              <img src="${sp.logo || 'https://cdn-icons-png.flaticon.com/512/861/861506.png'}" alt="${sp.name}">
+              <div class="sponsor-card-name">${sp.name}</div>
+              <div class="sponsor-card-slogan">${sp.slogan || ''}</div>
+            `;
+            showcase.appendChild(card);
+          });
+        }
+      }
+
+      // 6. ACTUALIZAR SCOREBUG EN VIVO (MÓDULO BÉISBOL vs FÚTBOL)
+      const scorebugEl = document.getElementById('scorebug');
+      if (scorebugEl) {
+        const activeTheme = data.scorebugTheme || 'dark-pro';
+        scorebugEl.className = 'scorebug-wrapper theme-' + activeTheme;
+      }
+
+      const vNameEl = document.getElementById('visitName');
+      if (vNameEl) vNameEl.textContent = data.visitaName || data.teamVisit || 'VISITANTE';
+      const hNameEl = document.getElementById('homeName');
+      if (hNameEl) hNameEl.textContent = data.localName || data.teamHome || 'LOCAL';
+      
+      const vLogo = document.getElementById('visitLogoImg');
+      if (vLogo) {
+        if (data.visitaLogo) {
+          if (vLogo.src !== data.visitaLogo) vLogo.src = data.visitaLogo;
+          vLogo.style.display = 'inline-block';
+        } else {
+          vLogo.style.display = 'none';
+        }
+      }
+
+      const hLogo = document.getElementById('homeLogoImg');
+      if (hLogo) {
+        if (data.localLogo) {
+          if (hLogo.src !== data.localLogo) hLogo.src = data.localLogo;
+          hLogo.style.display = 'inline-block';
+        } else {
+          hLogo.style.display = 'none';
+        }
+      }
+
+      if (data.visitaColor) {
+        const teamVisit = document.querySelector('.team-box.visit');
+        if (teamVisit) teamVisit.style.borderLeft = '6px solid ' + data.visitaColor;
+        const vScore = document.getElementById('visitScore');
+        if (vScore) vScore.style.color = data.visitaColor;
+      }
+      if (data.localColor) {
+        const teamHome = document.querySelector('.team-box.home');
+        if (teamHome) teamHome.style.borderLeft = '6px solid ' + data.localColor;
+      }
+
+      const vScoreEl = document.getElementById('visitScore');
+      const vScoreVal = data.visitaScore ?? data.scoreVisit ?? 0;
+      if (vScoreEl) {
+        if (vScoreEl.textContent !== String(vScoreVal)) {
+          vScoreEl.textContent = vScoreVal;
+          vScoreEl.classList.add('flash');
+          setTimeout(() => vScoreEl.classList.remove('flash'), 500);
+        }
+      }
+
+      const hScoreEl = document.getElementById('homeScore');
+      const hScoreVal = data.localScore ?? data.scoreHome ?? 0;
+      if (hScoreEl) {
+        if (hScoreEl.textContent !== String(hScoreVal)) {
+          hScoreEl.textContent = hScoreVal;
+          hScoreEl.classList.add('flash');
+          setTimeout(() => hScoreEl.classList.remove('flash'), 500);
+        }
+      }
+
+      const vHits = document.getElementById('visitHits');
+      if (vHits) vHits.textContent = data.visitaHits ?? data.hitsVisit ?? 0;
+      const vErr = document.getElementById('visitErrors');
+      if (vErr) vErr.textContent = data.visitaErrors ?? data.errorsVisit ?? 0;
+      const hHits = document.getElementById('homeHits');
+      if (hHits) hHits.textContent = data.localHits ?? data.hitsHome ?? 0;
+      const hErr = document.getElementById('homeErrors');
+      if (hErr) hErr.textContent = data.localErrors ?? data.errorsHome ?? 0;
+
+      const baseballBox = document.getElementById('baseballSituationBox');
+      const soccerBox = document.getElementById('soccerSituationBox');
+      
+      if (baseballBox) baseballBox.style.display = isSoccer ? 'none' : 'flex';
+      if (soccerBox) soccerBox.style.display = isSoccer ? 'flex' : 'none';
+
+      document.querySelectorAll('.baseball-stat').forEach(el => {
+        el.style.display = isSoccer ? 'none' : 'inline';
+      });
+
+      if (isSoccer && data.soccerState) {
+        const mins = Math.floor((data.soccerState.seconds || 0) / 60);
+        const secs = (data.soccerState.seconds || 0) % 60;
+        const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        
+        const clockEl = document.getElementById('overlaySoccerClock');
+        if (clockEl) clockEl.textContent = timeStr;
+
+        const periodEl = document.getElementById('overlaySoccerPeriod');
+        if (periodEl) periodEl.textContent = data.soccerState.period || '1T';
+
+        const addedEl = document.getElementById('overlaySoccerAdded');
+        if (addedEl) addedEl.textContent = data.soccerState.addedMinutes > 0 ? `+${data.soccerState.addedMinutes}'` : '';
+      }
+
+      const isTop = data.inningHalf === 'alta' || data.inningHalf === 'top';
+      const inningArrowEl = document.getElementById('inningArrow');
+      if (inningArrowEl) inningArrowEl.textContent = isTop ? '▲' : '▼';
+
+      const inningNumEl = document.getElementById('inningNum');
+      if (inningNumEl) inningNumEl.textContent = data.inningNumber ?? data.inningNum ?? 1;
+
+      const base1 = document.getElementById('base1');
+      if (base1) base1.classList.toggle('active', !!(data.bases && data.bases.b1));
+      const base2 = document.getElementById('base2');
+      if (base2) base2.classList.toggle('active', !!(data.bases && data.bases.b2));
+      const base3 = document.getElementById('base3');
+      if (base3) base3.classList.toggle('active', !!(data.bases && data.bases.b3));
+
+      const bCount = data.balls ?? 0;
+      for (let i = 1; i <= 4; i++) {
+        const bEl = document.getElementById(`b${i}`);
+        if (bEl) bEl.classList.toggle('active', bCount >= i);
+      }
+
+      const sCount = data.strikes ?? 0;
+      for (let i = 1; i <= 3; i++) {
+        const sEl = document.getElementById(`s${i}`);
+        if (sEl) sEl.classList.toggle('active', sCount >= i);
+      }
+
+      const oCount = data.outs ?? 0;
+      for (let i = 1; i <= 3; i++) {
+        const oEl = document.getElementById(`o${i}`);
+        if (oEl) oEl.classList.toggle('active', oCount >= i);
+      }
+
+      // ACTUALIZAR BANNER DE PATROCINADORES
+      const spState = data.sponsorsState || (data.sponsors ? data.sponsors : null);
+      if (spState && spState.visible && spState.list && spState.list.length > 0) {
+        const current = spState.list[spState.currentIndex] || spState.list[0];
+        if (current && current.logo) {
+          updateSponsorLogoSmoothly(current.logo);
+        } else {
+          updateSponsorLogoSmoothly(null);
+        }
+      } else {
+        updateSponsorLogoSmoothly(null);
+      }
+
+      // ACTUALIZAR CINTILLO DE NOTICIAS (TICKER TAPE)
+      const tickerBar = document.getElementById('tickerBar');
+      if (tickerBar) {
+        const tkState = data.tickerState || (data.ticker ? data.ticker : null);
+        if (tkState && tkState.visible && tkState.text) {
+          const textEl = document.getElementById('tickerText');
+          if (textEl && textEl.textContent !== tkState.text) {
+            textEl.textContent = tkState.text;
+            textEl.style.animation = 'none';
+            void textEl.offsetWidth;
+            textEl.style.animation = 'tickerMarquee 30s linear infinite';
+          }
+          tickerBar.classList.add('show');
+        } else {
+          tickerBar.classList.remove('show');
+        }
+      }
+    }
+
+    function checkHashData() {
+      if (window.location.hash && window.location.hash.includes('=')) {
+        try {
+          const hashStr = window.location.hash.substring(1);
+          const parts = hashStr.split('=');
+          if (parts.length >= 2) {
+            const jsonStr = decodeURIComponent(parts.slice(1).join('='));
+            const stateObj = JSON.parse(jsonStr);
+            updateScorebug(stateObj);
+          }
+        } catch (e) {}
+      }
+    }
+
+    channel.onmessage = (event) => {
+      const data = event.data ? (event.data.state || event.data) : null;
+      updateScorebug(data);
+    };
+
+    try {
+      const savedState = localStorage.getItem('baseball_obs_state') || localStorage.getItem('obs_baseball_state');
+      if (savedState) {
+        updateScorebug(JSON.parse(savedState));
+      }
+    } catch (e) {}
+
+    window.addEventListener('storage', (e) => {
+      if ((e.key === 'baseball_obs_state' || e.key === 'obs_baseball_state') && e.newValue) {
+        updateScorebug(JSON.parse(e.newValue));
+      }
+    });
+
+    window.addEventListener('hashchange', checkHashData);
+    checkHashData();
+
+    // Sincronización en tiempo real vía Server-Sent Events (SSE) < 5ms (Multi-usuario)
+    function getRoomKey() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('key') || 'default';
+    }
+
+    function initRealtimeSSE() {
+      try {
+        const host = window.location.host || 'localhost:8080';
+        const protocol = window.location.protocol.startsWith('https') ? 'https' : 'http';
+        const key = getRoomKey();
+        const sseUrl = `${protocol}://${host}/api/events?key=${encodeURIComponent(key)}`;
+        const es = new EventSource(sseUrl);
+
+        es.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            const stateData = payload.state || payload;
+            if (stateData && typeof stateData === 'object' && Object.keys(stateData).length > 0) {
+              updateScorebug(stateData);
+            }
+          } catch (e) {}
+        };
+
+        es.onerror = () => {
+          // SSE reconecta automáticamente en el navegador
+        };
+      } catch (e) {
+        console.warn('Error inicializando SSE en overlay:', e);
+      }
+    }
+
+    async function fetchStateFromAPI() {
+      try {
+        const host = window.location.host || 'localhost:8080';
+        const protocol = window.location.protocol.startsWith('https') ? 'https' : 'http';
+        const key = getRoomKey();
+        const apiUrl = `${protocol}://${host}/api/state?key=${encodeURIComponent(key)}&t=${Date.now()}`;
+        const res = await fetch(apiUrl);
+        if (res.ok) {
+          const data = await res.json();
+          const stateData = data.state || data;
+          if (stateData && typeof stateData === 'object' && Object.keys(stateData).length > 0) {
+            updateScorebug(stateData);
+          }
+        }
+      } catch (e) {}
+    }
+
+    initRealtimeSSE();
+    fetchStateFromAPI();
+    // Fallback secundario de respaldo por HTTP (cada 3 segundos)
+    setInterval(fetchStateFromAPI, 3000);
+  </script>
+
+  <!-- ==========================================================================
+       PANTALLAS FULLSCREEN (MASTER HTML BROADCAST SCENES)
+       ========================================================================== -->
+  <!-- 1. PANTALLA ESPERA -->
+  <div id="screenEspera" class="master-screen-layer">
+    <div class="master-screen-bg" style="background-image: url('img/ESPERA.png');"></div>
+    <div class="master-screen-content">
+      <div class="master-live-badge">🔴 INICIAMOS EN BREVE</div>
+    </div>
+  </div>
+
+  <!-- 2. PANTALLA BIENVENIDA / PREVIA -->
+  <div id="screenBienvenida" class="master-screen-layer">
+    <div class="master-screen-bg" style="background-image: url('img/BIENVENIDOS.PNG');"></div>
+    <div class="master-screen-content center">
+      <div class="match-welcome-card">
+        <div class="match-welcome-title">TRANSMISIÓN EN VIVO</div>
+        <div class="match-welcome-teams">
+          <div class="welcome-team-box">
+            <img id="welcomeVisitaLogo" src="" style="display:none;" />
+            <span id="welcomeVisitaName" class="welcome-team-name">VISITA</span>
+          </div>
+          <div class="welcome-vs-badge">VS</div>
+          <div class="welcome-team-box">
+            <img id="welcomeLocalLogo" src="" style="display:none;" />
+            <span id="welcomeLocalName" class="welcome-team-name">LOCAL</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PANTALLA MEDIO TIEMPO / DESCANSO -->
+  
+  <!-- 3. PANTALLA MEDIO TIEMPO / DESCANSO (DIVERSIFICADA BÉISBOL vs FÚTBOL) -->
+  <div id="screenMedioTiempo" class="master-screen-layer">
+    <div class="master-screen-bg" style="background-image: url('img/MEDIOTIEMPO.png');"></div>
+    <div class="master-screen-content center">
+      
+      <!-- MARCADOR CLÁSICO BÉISBOL (ESTILO FENWAY PARK) -->
+      <div id="fenwayBaseballBoard" class="fenway-board-container">
+        <div class="fenway-header" id="fenwayStadiumTitle">RESUMEN DE BÉISBOL - MEDIO INNING</div>
+        <table class="fenway-table">
+          <thead>
+            <tr>
+              <th class="col-team">EQUIPOS</th>
+              <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+              <th class="col-sep"></th>
+              <th style="color:#4ADE80;">R</th>
+              <th style="color:#38BDF8;">H</th>
+              <th style="color:#F87171;">E</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-team-name" id="fenwayVisitaName">VISITA</td>
+              <td id="fV1"><span class="fenway-num-box">0</span></td>
+              <td id="fV2"><span class="fenway-num-box">0</span></td>
+              <td id="fV3"><span class="fenway-num-box">0</span></td>
+              <td id="fV4"><span class="fenway-num-box">0</span></td>
+              <td id="fV5"><span class="fenway-num-box">0</span></td>
+              <td id="fV6"><span class="fenway-num-box">0</span></td>
+              <td id="fV7"><span class="fenway-num-box">0</span></td>
+              <td id="fV8"><span class="fenway-num-box">0</span></td>
+              <td id="fV9"><span class="fenway-num-box">0</span></td>
+              <td class="col-sep"></td>
+              <td><span class="fenway-num-box total-r" id="fenwayVisitaR">0</span></td>
+              <td><span class="fenway-num-box total-h" id="fenwayVisitaH">0</span></td>
+              <td><span class="fenway-num-box total-e" id="fenwayVisitaE">0</span></td>
+            </tr>
+            <tr>
+              <td class="col-team-name" id="fenwayLocalName">LOCAL</td>
+              <td id="fL1"><span class="fenway-num-box">0</span></td>
+              <td id="fL2"><span class="fenway-num-box">0</span></td>
+              <td id="fL3"><span class="fenway-num-box">0</span></td>
+              <td id="fL4"><span class="fenway-num-box">0</span></td>
+              <td id="fL5"><span class="fenway-num-box">0</span></td>
+              <td id="fL6"><span class="fenway-num-box">0</span></td>
+              <td id="fL7"><span class="fenway-num-box">0</span></td>
+              <td id="fL8"><span class="fenway-num-box">0</span></td>
+              <td id="fL9"><span class="fenway-num-box">0</span></td>
+              <td class="col-sep"></td>
+              <td><span class="fenway-num-box total-r" id="fenwayLocalR">0</span></td>
+              <td><span class="fenway-num-box total-h" id="fenwayLocalH">0</span></td>
+              <td><span class="fenway-num-box total-e" id="fenwayLocalE">0</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="fenway-footer-row">
+          <div class="fenway-footer-item">
+            <span>AT BAT:</span>
+            <span id="fenwayAtBatName" style="color:#FCD34D;">VISITA</span>
+          </div>
+          <div class="fenway-footer-item">
+            <span>BALL</span>
+            <div class="fenway-dot-group">
+              <div id="fDotB1" class="fenway-dot green"></div>
+              <div id="fDotB2" class="fenway-dot green"></div>
+              <div id="fDotB3" class="fenway-dot green"></div>
+              <div id="fDotB4" class="fenway-dot green"></div>
+            </div>
+          </div>
+          <div class="fenway-footer-item">
+            <span>STRIKE</span>
+            <div class="fenway-dot-group">
+              <div id="fDotS1" class="fenway-dot yellow"></div>
+              <div id="fDotS2" class="fenway-dot yellow"></div>
+              <div id="fDotS3" class="fenway-dot yellow"></div>
+            </div>
+          </div>
+          <div class="fenway-footer-item">
+            <span>OUT</span>
+            <div class="fenway-dot-group">
+              <div id="fDotO1" class="fenway-dot red"></div>
+              <div id="fDotO2" class="fenway-dot red"></div>
+              <div id="fDotO3" class="fenway-dot red"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARCADOR STADIUM FÚTBOL (ESTILO CHAMPIONS / RECAP) -->
+      <div id="soccerHalftimeBoard" class="soccer-halftime-card" style="display:none;">
+        <div class="soccer-ht-header">
+          <span class="soccer-ht-title">RESUMEN DE MEDIO TIEMPO</span>
+          <span id="soccerHtPeriodBadge" class="soccer-ht-badge">DESCANSO (1T FINALIZADO)</span>
+        </div>
+        <div class="soccer-ht-main">
+          <div class="soccer-ht-team">
+            <img id="soccerHtVisitaLogo" src="" style="display:none;">
+            <span id="soccerHtVisitaName" class="soccer-ht-team-name">VISITA</span>
+          </div>
+          <div class="soccer-ht-score-center">
+            <span id="soccerHtVisitaScore" class="soccer-ht-score-val">0</span>
+            <span class="soccer-ht-dash">-</span>
+            <span id="soccerHtLocalScore" class="soccer-ht-score-val">0</span>
+          </div>
+          <div class="soccer-ht-team">
+            <img id="soccerHtLocalLogo" src="" style="display:none;">
+            <span id="soccerHtLocalName" class="soccer-ht-team-name">LOCAL</span>
+          </div>
+        </div>
+        <div class="soccer-ht-stats-grid">
+          <div class="soccer-stat-row">
+            <span>TARJETAS AMARILLAS 🟨</span>
+            <div>
+              <span id="soccerHtVisitaYellow" class="soccer-stat-badge">0</span>
+              <span style="margin: 0 4px; color:#64748B;">vs</span>
+              <span id="soccerHtLocalYellow" class="soccer-stat-badge">0</span>
+            </div>
+          </div>
+          <div class="soccer-stat-row">
+            <span>TARJETAS ROJAS 🟥</span>
+            <div>
+              <span id="soccerHtVisitaRed" class="soccer-stat-badge">0</span>
+              <span style="margin: 0 4px; color:#64748B;">vs</span>
+              <span id="soccerHtLocalRed" class="soccer-stat-badge">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. PANTALLA FALLA TÉCNICA -->
+  <div id="screenProblemas" class="master-screen-layer">
+    <div class="master-screen-bg" style="background-image: url('img/PROBELMAS.png');"></div>
+  </div>
+
+  <!-- 5. PATROCINADORES FULLSCREEN -->
+  <div id="screenPatrocinadoresFull" class="master-screen-layer">
+    <div class="master-screen-bg dark-overlay"></div>
+    <div class="master-screen-content center">
+      <div class="sponsors-full-container">
+        <div class="sponsors-full-header">PATROCINADORES OFICIALES</div>
+        <div id="sponsorsFullShowcase" class="sponsors-showcase-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARCO DE CÁMARA OPCIONAL (CAMERA FRAME OVERLAY) -->
+  <div id="cameraFrameOverlay" class="camera-frame-layer">
+    <div class="camera-border-inner"></div>
+  </div>
+
+</body>
+</html>
