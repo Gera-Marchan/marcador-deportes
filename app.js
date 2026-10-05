@@ -1274,18 +1274,21 @@ class BaseballOBSApp {
   }
 
   sendAllToOBS() {
-    this.sendTextToOBS(this.config.sources.visitaName, this.state.visitaName);
-    this.sendTextToOBS(this.config.sources.localName, this.state.localName);
-    this.sendTextToOBS(this.config.sources.visitaScore, String(this.state.visitaScore));
-    this.sendTextToOBS(this.config.sources.localScore, String(this.state.localScore));
-    this.sendTextToOBS(this.config.sources.visitaHits, String(this.state.visitaHits));
-    this.sendTextToOBS(this.config.sources.localHits, String(this.state.localHits));
-    this.sendTextToOBS(this.config.sources.visitaErrors, String(this.state.visitaErrors));
-    this.sendTextToOBS(this.config.sources.localErrors, String(this.state.localErrors));
-    this.sendInningToOBS();
-    this.sendConteoToOBS();
-    this.sendOverlayToOBS();
-    this.broadcastStateToOBS();
+    if (!this.connected || !this.obs) return;
+    try {
+      this.sendTextToOBS(this.config.sources.visitaName, this.state.visitaName);
+      this.sendTextToOBS(this.config.sources.localName, this.state.localName);
+      this.sendTextToOBS(this.config.sources.visitaScore, String(this.state.visitaScore));
+      this.sendTextToOBS(this.config.sources.localScore, String(this.state.localScore));
+      this.sendTextToOBS(this.config.sources.visitaHits, String(this.state.visitaHits));
+      this.sendTextToOBS(this.config.sources.localHits, String(this.state.localHits));
+      this.sendTextToOBS(this.config.sources.visitaErrors, String(this.state.visitaErrors));
+      this.sendTextToOBS(this.config.sources.localErrors, String(this.state.localErrors));
+      this.sendInningToOBS();
+      this.sendConteoToOBS();
+      this.sendOverlayToOBS();
+      this.broadcastStateToOBS();
+    } catch(e) {}
   }
 
   async resolveOBSInputName(configuredName) {
